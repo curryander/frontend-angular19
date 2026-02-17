@@ -30,6 +30,11 @@
                 "glob": "**/*",
                 "input": "public"
               },
+              {
+                "glob": "**/*",
+                "input": "staples-of-documents",
+                "output": "staples-of-documents"
+              },
               "src/assets"
             ],
             "styles": [
@@ -92,6 +97,11 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "staples-of-documents",
+                "output": "staples-of-documents"
               }
             ],
             "styles": [

@@ -1,9 +1,9 @@
-﻿<drv-applicationheader
+<drv-applicationheader
   triggerButtonLabel="Navigation anzeigen"
   appTitle="Process"
   [fullWidth]="false"
 >
-  <drv-button label="Beenden" kind="secondary" iconType="close" [route]="['/']"></drv-button>
+  <drv-button label="Abbrechen" kind="secondary" iconType="close" (buttonClick)="cancelFlow()"></drv-button>
 </drv-applicationheader>
 
 <div drv-grid class="fd-page" [fullWidth]="false">
@@ -18,17 +18,17 @@
           [completed]="true"
         ></drv-progressnavnode>
         <drv-progressnavnode
-          name="Summary"
-          [route]="['/summary']"
-          [current]="false"
-          [active]="true"
-          [completed]="true"
-        ></drv-progressnavnode>
-        <drv-progressnavnode
           name="Process"
           [route]="['/process']"
           [current]="true"
           [active]="true"
+          [completed]="false"
+        ></drv-progressnavnode>
+        <drv-progressnavnode
+          name="Summary"
+          [route]="['/summary']"
+          [current]="false"
+          [active]="false"
           [completed]="false"
         ></drv-progressnavnode>
       </drv-progressnav>
@@ -60,13 +60,10 @@
 
       <section class="fd-actions">
         <drv-buttonbar placing="space-between" layoutMobile="block" [wrap]="true">
-          <drv-button label="Zurueck zu Summary" kind="secondary" [route]="['/summary']"></drv-button>
-          <drv-button label="Vorgang absenden" kind="primary" [route]="['/overview']"></drv-button>
+          <drv-button label="Zurueck zu Upload" kind="secondary" (buttonClick)="backToUpload()"></drv-button>
+          <drv-button label="Weiter zu Summary" kind="primary" (buttonClick)="goToSummary()"></drv-button>
         </drv-buttonbar>
       </section>
     </main>
   </div>
 </div>
-
-
-

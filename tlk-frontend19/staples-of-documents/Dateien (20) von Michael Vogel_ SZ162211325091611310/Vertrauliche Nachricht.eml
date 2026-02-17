@@ -1,0 +1,36 @@
+Return-Path: michael.vogel@drv-rlp.de
+Date: Sun, 21 Sep 2025 17:12:02 +0200
+From: Michael Vogel <michael.vogel@drv-rlp.de>
+Sender: Michael Vogel <michael.vogel@drv-rlp.de>
+Reply-To: Michael Vogel <michael.vogel@drv-rlp.de>
+To: boris.baltzer@de.ibm.com, javiera.palomino@ibm.com
+Message-ID: <1814942175.1503.1758467522366@smtp-in.drv.drv>
+Subject: Vertrauliche Nachricht
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_1500_289255347.1758467522366"
+
+------=_Part_1500_289255347.1758467522366
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_1501_622723418.1758467522366"
+
+------=_Part_1501_622723418.1758467522366
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+=09
+Hallo, hier die Testf=C3=A4lle
+------=_Part_1501_622723418.1758467522366
+Content-Type: multipart/related; 
+	boundary="----=_Part_1502_348042007.1758467522366"
+
+------=_Part_1502_348042007.1758467522366
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<p>Hallo, hier die Testf=C3=A4lle</p>
+------=_Part_1502_348042007.1758467522366--
+
+------=_Part_1501_622723418.1758467522366--
+
+------=_Part_1500_289255347.1758467522366--

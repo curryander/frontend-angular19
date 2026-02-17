@@ -1,4 +1,5 @@
-﻿import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import {
   ApplicationHeaderComponent,
   ButtonComponent,
@@ -12,6 +13,7 @@ import {
   TableComponent,
   type TableData,
 } from '@drv-ds/drv-design-system-ng';
+import { StapleFlowService } from '../staple-flow.service';
 
 @Component({
   selector: 'app-summary',
@@ -32,6 +34,9 @@ import {
   styleUrl: './summary.component.scss',
 })
 export class SummaryComponent {
+  private readonly router = inject(Router);
+  private readonly flowService = inject(StapleFlowService);
+
   readonly summaryData: TableData = {
     header: [
       { label: 'Bereich' },
@@ -45,4 +50,18 @@ export class SummaryComponent {
       ['Kontakt', 'Optional', 'E-Mail-Adresse wurde angegeben'],
     ],
   };
+
+  cancelFlow(): void {
+    this.flowService.resetFlow();
+    void this.router.navigate(['/staples']);
+  }
+
+  finishFlow(): void {
+    this.flowService.resetFlow();
+    void this.router.navigate(['/staples']);
+  }
+
+  backToProcess(): void {
+    void this.router.navigate(['/process']);
+  }
 }

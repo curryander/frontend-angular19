@@ -1,0 +1,142 @@
+.staples-hero,
+.staples-section {
+  margin: 0 auto;
+  max-width: 72rem;
+  padding: 1.5rem 1rem;
+}
+
+.staples-hero h1 {
+  margin: 0 0 1rem;
+}
+
+.staples-hero p {
+  line-height: 1.6;
+  margin: 0 0 1rem;
+}
+
+.staples-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.feature-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
+.feature-card {
+  background: #f6f8fa;
+  border: 1px solid #d3d9df;
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.feature-card h3 {
+  margin: 0 0 0.5rem;
+}
+
+.feature-card p {
+  margin: 0;
+}
+
+.staple-gallery-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
+.staple-gallery-card {
+  background: #f6f8fa;
+  border: 1px solid #d3d9df;
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.staple-preview {
+  background: #ffffff;
+  border: 1px solid #d3d9df;
+  border-radius: 0.5rem;
+  height: 14rem;
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+}
+
+.staple-preview iframe {
+  border: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.staple-preview-placeholder {
+  align-items: center;
+  background: #ffffff;
+  border: 1px dashed #d3d9df;
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  justify-content: center;
+  min-height: 14rem;
+  margin-bottom: 0.75rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.staple-preview-placeholder p {
+  color: #4a5866;
+  margin: 0;
+}
+
+.staple-gallery-card h3 {
+  font-size: 1rem;
+  margin: 0 0 0.75rem;
+  word-break: break-word;
+}
+
+.staple-gallery-card a {
+  color: #004e9a;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.staple-gallery-card a:hover,
+.staple-gallery-card a:focus {
+  text-decoration: underline;
+}
+
+.staple-gallery-category {
+  color: #4a5866;
+  font-size: 0.875rem;
+  margin: 0 0 0.5rem;
+}
+
+.staple-gallery-meta {
+  color: #2d3945;
+  font-size: 0.875rem;
+  margin: 0 0 0.5rem;
+}
+
+.staple-gallery-actions {
+  margin-top: 1rem;
+}
+
+@media (min-width: 56rem) {
+  .staples-hero,
+  .staples-section {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  .feature-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .staple-gallery-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

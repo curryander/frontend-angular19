@@ -1,4 +1,5 @@
-﻿import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import {
   ApplicationHeaderComponent,
   ButtonComponent,
@@ -15,6 +16,7 @@ import {
   TextinputComponent,
   UploadFieldComponent,
 } from '@drv-ds/drv-design-system-ng';
+import { StapleFlowService } from '../staple-flow.service';
 
 @Component({
   selector: 'app-upload',
@@ -39,6 +41,9 @@ import {
   styleUrl: './upload.component.scss',
 })
 export class UploadComponent {
+  private readonly router = inject(Router);
+  private readonly flowService = inject(StapleFlowService);
+
   readonly documentTypeOptions = [
     { label: 'Bitte waehlen', value: '' },
     { label: 'Geburtsurkunde', value: 'birth-certificate' },
@@ -46,4 +51,14 @@ export class UploadComponent {
     { label: 'Studienbescheinigung', value: 'study-certificate' },
     { label: 'Sonstiger Nachweis', value: 'other' },
   ];
+
+  cancelFlow(): void {
+    this.flowService.resetFlow();
+    void this.router.navigate(['/staples']);
+  }
+
+  goToProcess(): void {
+    this.flowService.completeUpload();
+    void this.router.navigate(['/process']);
+  }
 }

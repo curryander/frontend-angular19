@@ -1,1 +1,88 @@
-<p>staples works!</p>
+<drv-header
+  [headerLogoSmallPath]="'assets/svg/drv-logo-the-lion-king-small.svg'"
+  [headerLogoPath]="'assets/svg/drv-logo-the-lion-king-large.svg'"
+  [fullWidth]="false"
+  [mainItems]="[
+  {text: 'Home', route: ['/home']},
+  {text: 'Staples', route: ['/staples']},
+  {text: 'Overview', route: ['/overview']},
+   ]"
+></drv-header>
+
+<main>
+  <section class="staples-hero">
+    <h1>Document Staples</h1>
+    <p>
+      Erstellen Sie einen neuen Dokumenten-Staple und durchlaufen Sie den gefuehrten Ablauf aus Upload, Processing und Summary.
+    </p>
+    <div class="staples-actions">
+      <drv-button label="+ add a document staple" kind="primary" (buttonClick)="startStapleFlow()"></drv-button>
+    </div>
+  </section>
+
+  <section class="staples-section">
+    <h2>Ablauf</h2>
+    <div class="feature-grid">
+      <article class="feature-card">
+        <h3>1. Upload</h3>
+        <p>Dokumente hochladen und die Eingaben vorbereiten.</p>
+      </article>
+      <article class="feature-card">
+        <h3>2. Processing</h3>
+        <p>Dokumente verarbeiten und den Vorgang fachlich pruefen.</p>
+      </article>
+      <article class="feature-card">
+        <h3>3. Summary</h3>
+        <p>Zusammenfassung kontrollieren und den Staple abschliessen.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="staples-section">
+    <h2>Gallery</h2>
+    @defer (on idle) {
+      <div class="staple-gallery-grid">
+        @for (doc of visibleStapleDocuments; track doc.url) {
+          <article class="staple-gallery-card">
+            @if (isPreviewActive(doc.url)) {
+              <div class="staple-preview">
+                <iframe
+                  [src]="doc.previewUrl"
+                  title="PDF Vorschau"
+                  loading="lazy"
+                ></iframe>
+              </div>
+            } @else {
+              <div class="staple-preview-placeholder">
+                <p>Vorschau wird bei Bedarf geladen.</p>
+                <drv-button label="Vorschau laden" kind="secondary" (buttonClick)="showPreview(doc.url)"></drv-button>
+              </div>
+            }
+            <p class="staple-gallery-category">{{ doc.category }}</p>
+            <h3>{{ doc.title }}</h3>
+            <p class="staple-gallery-meta">Hinzugefuegt am: {{ doc.addedAt }}</p>
+            <p class="staple-gallery-meta">
+              Seiten:
+              @if (doc.pageCountLoading) {
+                wird ermittelt...
+              } @else if (doc.pageCount !== null && doc.pageCount >= 0) {
+                {{ doc.pageCount }}
+              } @else {
+                nicht verfuegbar
+              }
+            </p>
+            <a [href]="doc.url" target="_blank" rel="noopener noreferrer">PDF oeffnen</a>
+          </article>
+        }
+      </div>
+
+      @if (hasMoreDocuments()) {
+        <div class="staple-gallery-actions">
+          <drv-button label="load more" kind="secondary" (buttonClick)="loadMoreDocuments()"></drv-button>
+        </div>
+      }
+    } @placeholder {
+      <p>Gallery wird geladen...</p>
+    }
+  </section>
+</main>

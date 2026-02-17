@@ -1,9 +1,10 @@
-﻿<drv-applicationheader
+<drv-applicationheader
   triggerButtonLabel="Navigation anzeigen"
   appTitle="Summary"
   [fullWidth]="false"
 >
-  <drv-button label="Beenden" kind="secondary" iconType="close" [route]="['/']"></drv-button>
+  <drv-button label="Abbrechen" kind="secondary" iconType="close" (buttonClick)="cancelFlow()"></drv-button>
+  <drv-button label="Beenden" kind="secondary" (buttonClick)="finishFlow()"></drv-button>
 </drv-applicationheader>
 
 <div drv-grid class="fd-page" [fullWidth]="false">
@@ -18,17 +19,17 @@
           [completed]="true"
         ></drv-progressnavnode>
         <drv-progressnavnode
+          name="Process"
+          [route]="['/process']"
+          [current]="false"
+          [active]="true"
+          [completed]="true"
+        ></drv-progressnavnode>
+        <drv-progressnavnode
           name="Summary"
           [route]="['/summary']"
           [current]="true"
           [active]="true"
-          [completed]="false"
-        ></drv-progressnavnode>
-        <drv-progressnavnode
-          name="Process"
-          [route]="['/process']"
-          [current]="false"
-          [active]="false"
           [completed]="false"
         ></drv-progressnavnode>
       </drv-progressnav>
@@ -49,22 +50,12 @@
         <drv-table [data]="summaryData" [caption]="'Zusammenfassung der Eingaben'" [sortable]="true"></drv-table>
       </section>
 
-      <section class="fd-section">
-        <h2>Naechster Schritt</h2>
-        <p>
-          Mit Klick auf <strong>Weiter zu Process</strong> starten Sie die Verarbeitung und uebermitteln den Vorgang.
-        </p>
-      </section>
-
       <section class="fd-actions">
         <drv-buttonbar placing="space-between" layoutMobile="block" [wrap]="true">
-          <drv-button label="Zurueck zu Upload" kind="secondary" [route]="['/upload']"></drv-button>
-          <drv-button label="Weiter zu Process" kind="primary" [route]="['/process']"></drv-button>
+          <drv-button label="Zurueck zu Process" kind="secondary" (buttonClick)="backToProcess()"></drv-button>
+          <drv-button label="Beenden" kind="primary" (buttonClick)="finishFlow()"></drv-button>
         </drv-buttonbar>
       </section>
     </main>
   </div>
 </div>
-
-
-

@@ -47,6 +47,43 @@
   line-height: 1.6;
 }
 
+.home-insight-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
+.home-insight-card {
+  background: #f6f8fa;
+  border: 1px solid #d3d9df;
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.home-insight-card drv-pictogram {
+  display: inline-block;
+}
+
+.home-insight-head {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.home-insight-head h3 {
+  margin: 0;
+}
+
+.home-insight-card :where(dt) {
+  display: none;
+}
+
+.home-insight-card :where(dd) {
+  margin: 0;
+}
+
 .home-section-last {
   padding-bottom: 2rem;
 }
@@ -60,5 +97,9 @@
 
   .feature-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .home-insight-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
