@@ -1,0 +1,36 @@
+﻿.fd-page {
+  padding-block: 1rem 2rem;
+}
+
+.fd-layout {
+  align-items: start;
+}
+
+.fd-sidebar {
+  position: sticky;
+  inset-block-start: 1rem;
+}
+
+.fd-content {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.fd-section {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 0.125rem solid var(--drv-color-ui-04, #b4c1d0);
+  border-radius: 0.5rem;
+  background-color: var(--drv-color-ui-01, #fff);
+}
+
+.fd-actions {
+  padding-block-end: 1rem;
+}
+
+@media (max-width: 64.0425rem) {
+  .fd-sidebar {
+    position: static;
+  }
+}

@@ -1,0 +1,302 @@
+﻿<drv-header
+  [headerLogoSmallPath]="'assets/svg/drv-logo-the-lion-king-small.svg'"
+  [headerLogoPath]="'assets/svg/drv-logo-the-lion-king-large.svg'"
+  [fullWidth]="false"
+  [mainItems]="[
+  {text: 'Home', route: ['/home']},
+  {text: 'Upload', route: ['/upload']},
+  {text: 'Summary', route: ['/summary']},
+  {text: 'Process', route: ['/process']},
+  {text: 'Overview', route: ['overview']},
+   ]"
+></drv-header>
+<drv-contentpage>
+  <section class="history-hero" id="start">
+    <p class="drv-label-01">Interaktive Fachseite</p>
+    <h1>Geschichte der Deutschen Rentenversicherung: Entwicklung, Reformen und Bedeutung</h1>
+    <p>
+      Die deutsche Rentenversicherung ist kein starres System, sondern das Ergebnis von Krisen, politischen Entscheidungen,
+      Arbeitsmarktveraenderungen und gesellschaftlichen Leitbildern. Diese Seite erklaert die Entwicklung von den
+      Sozialgesetzen des 19. Jahrhunderts bis zur digitalisierten Verwaltung der Gegenwart.
+    </p>
+
+    <drv-status icon="clock" bgColor="ui-05" variant="condensed">
+      Detaillierte Uebersicht mit Interaktion, Tabellen und Primarquellenbildern
+    </drv-status>
+
+    <div class="history-actions">
+      <drv-button label="Zur Startseite" kind="secondary" [route]="['/']"></drv-button>
+      <drv-button label="Upload-Bereich" kind="primary" [route]="['/upload']"></drv-button>
+      <drv-button label="DRV Website" kind="tertiary" href="https://www.deutsche-rentenversicherung.de" target="_blank"></drv-button>
+    </div>
+  </section>
+
+  <section class="history-section">
+    <h2>Historische Epochen im Vergleich</h2>
+    <p>
+      Nutze die Tabs, um die Entwicklung in drei Phasen zu betrachten: Aufbauphase, Neuordnung in der Bundesrepublik
+      und die heutige Transformationsphase.
+    </p>
+
+    <drv-tablist>
+      <drv-tabpanel title="1889 bis 1945">
+        <h3>Vom Sozialgesetz zum Pflichtsystem</h3>
+        <p>
+          Die Invaliditaets- und Altersversicherung von 1889 war eng mit der Industrialisierung verknuepft.
+          Ziel war, Arbeiter gegen existentielle Risiken abzusichern und soziale Stabilitaet zu schaffen.
+          Bereits frueh wurde deutlich: Versicherungsschutz braucht verlaessliche Finanzierung und klare Verwaltung.
+        </p>
+        <drv-details title="Vertiefung: Warum war 1889 ein Wendepunkt?">
+          <p>
+            Erstmals entstand ein staatlich reguliertes, beitragsbasiertes Alterssicherungssystem in dieser Breite.
+            Das Prinzip der solidarischen Finanzierung ueber Arbeitgeber und Arbeitnehmer praegt die Systemlogik bis heute.
+          </p>
+        </drv-details>
+      </drv-tabpanel>
+
+      <drv-tabpanel title="1945 bis 2005">
+        <h3>Neuaufbau und Rentenreformen</h3>
+        <p>
+          Nach Kriegsfolgen und wirtschaftlicher Neuordnung entstand in der Bundesrepublik die dynamische Rente.
+          Die Reformen zielten darauf, Kaufkraftverluste abzufangen und die Rente als tragende Saeule der Alterssicherung
+          politisch zu stabilisieren.
+        </p>
+        <drv-details title="Vertiefung: Dynamische Rente 1957">
+          <p>
+            Das zentrale Reformsignal lautete: Renten sollen an der allgemeinen Einkommensentwicklung teilhaben.
+            Dadurch wurde Altersversorgung staerker als gesellschaftliche Teilhabe verstanden.
+          </p>
+        </drv-details>
+      </drv-tabpanel>
+
+      <drv-tabpanel title="2005 bis heute">
+        <h3>Einheitliche Organisation und Digitalisierung</h3>
+        <p>
+          Mit der Zusammenfuehrung unter der Marke Deutsche Rentenversicherung wurden Strukturen vereinfacht.
+          Parallel entstanden digitale Zugangswege fuer Antraege, Kontenklaerung, Bescheide und Kommunikation.
+        </p>
+        <drv-details title="Vertiefung: Aktuelle Herausforderungen">
+          <p>
+            Der demografische Wandel, veraenderte Erwerbsbiografien und neue digitale Erwartungen machen die Rentenversicherung
+            zu einem dauerhaft reformfaehigen System. Neben Finanzierung bleibt die Verstaendlichkeit fuer Versicherte entscheidend.
+          </p>
+        </drv-details>
+      </drv-tabpanel>
+    </drv-tablist>
+  </section>
+
+  <section class="history-section">
+    <h2>Meilensteine der Rentenversicherung</h2>
+    <drv-table
+      [data]="milestoneTableData"
+      [caption]="'Chronologie zentraler Reform- und Organisationsschritte'"
+      [sortable]="true"
+    ></drv-table>
+
+    <div class="history-actions chronology-toggle">
+      <drv-button
+        [label]="showExtendedChronology ? 'Langchronik ausblenden' : 'Langchronik einblenden'"
+        kind="tertiary"
+        (buttonClick)="toggleChronology()"
+      ></drv-button>
+    </div>
+
+    @if (showExtendedChronology) {
+      <div class="extended-chronology">
+        <h3>Langchronik</h3>
+        <ul class="drv-ul">
+          @for (entry of extendedChronology; track entry.year + entry.event) {
+            <li><strong>{{ entry.year }}:</strong> {{ entry.event }}</li>
+          }
+        </ul>
+      </div>
+    }
+  </section>
+
+  <section class="history-section">
+    <h2>Strukturfragen und Reformlogik</h2>
+    <p>
+      Viele Reformen drehen sich nicht nur um einzelne Gesetze, sondern um Grundkonflikte: Finanzierung,
+      Leistungsniveau, Verteilungsgerechtigkeit und Verwaltungsmodernisierung.
+    </p>
+    <drv-table
+      [data]="reformTableData"
+      [caption]="'Politische Konflikte und institutionelle Antworten'"
+      [sortable]="true"
+      variant="condensed"
+    ></drv-table>
+  </section>
+
+  <section class="history-section">
+    <h2>Ost/West-Entwicklung seit der Wiedervereinigung</h2>
+    <p>
+      Die Wiedervereinigung brachte eine aussergewoehnlich komplexe Aufgabe: Unterschiedliche Rentensysteme,
+      Versicherungsbiografien und Berechnungslogiken mussten in ein gemeinsames Rechts- und Verwaltungsmodell ueberfuehrt werden.
+    </p>
+
+    <drv-table
+      [data]="reunificationTableData"
+      [caption]="'Vergleich der Ausgangslagen und Integrationsschritte'"
+      [sortable]="true"
+      variant="condensed"
+    ></drv-table>
+
+    <drv-details title="Vertiefung: Warum war die Ueberleitung so anspruchsvoll?">
+      <p>
+        Zeiten, Erwerbsverlaeufe und Anspruchslogiken waren historisch verschieden dokumentiert. Dadurch mussten
+        technische Datenmigration, juristische Ueberleitung und sozialpolitische Absicherung gleichzeitig umgesetzt werden.
+      </p>
+    </drv-details>
+  </section>
+
+  <section class="history-section">
+    <h2>Finanzierung: Umlageverfahren, Kapitaldeckung und Zusammenspiel</h2>
+    <p>
+      In Deutschland basiert die gesetzliche Rentenversicherung primaer auf dem Umlageverfahren. Fuer viele Versicherte
+      kommt zusaetzlich kapitalgedeckte Vorsorge hinzu. Beide Logiken haben unterschiedliche Staerken und Risiken.
+    </p>
+
+    <drv-tablist>
+      <drv-tabpanel title="Umlageverfahren">
+        <p>
+          Laufende Beitraege finanzieren laufende Renten. Das schafft direkte Generationensolidaritaet,
+          macht das System aber sensibel fuer Beschaeftigung, Lohnentwicklung und Demografie.
+        </p>
+      </drv-tabpanel>
+      <drv-tabpanel title="Kapitaldeckung">
+        <p>
+          Hier werden Mittel ueber Zeit angespart und spaeter ausgezahlt. Das kann Chancen auf Rendite eroeffnen,
+          ist aber den Schwankungen von Kapitalmaerkten ausgesetzt.
+        </p>
+      </drv-tabpanel>
+      <drv-tabpanel title="Kombination in Deutschland">
+        <p>
+          Praktisch entsteht ein Mehrsaeulensystem: gesetzliche Rente als Basis plus betriebliche und private Vorsorge.
+          Die politische Aufgabe liegt darin, dieses Zusammenspiel fuer unterschiedliche Erwerbsbiografien tragfaehig zu halten.
+        </p>
+      </drv-tabpanel>
+    </drv-tablist>
+
+    <drv-table
+      [data]="financeComparisonData"
+      [caption]="'Systemvergleich Finanzierung'"
+      [sortable]="true"
+      variant="condensed"
+    ></drv-table>
+  </section>
+
+  <section class="history-section">
+    <h2>Interaktive Zeitleiste mit Schwerpunkten</h2>
+    <drv-accordion [multiselectable]="true" [showToggleAllButton]="true" headline="Historische Schwerpunkte">
+      <drv-accordionitem title="Aufbauphase: Sozialpolitik als Staatsaufgabe" [isOpen]="true" iconType="status-success">
+        <p>
+          In der fruehen Phase stand die Absicherung gegen Alters- und Invaliditaetsrisiken im Vordergrund.
+          Gleichzeitig wurde ein Verwaltungsmodell etabliert, das langfristig skaliert werden konnte.
+        </p>
+      </drv-accordionitem>
+
+      <drv-accordionitem title="Reformphase: Dynamisierung und Rechtsvereinheitlichung" iconType="status-processing">
+        <p>
+          Die Nachkriegszeit brachte Reformdruck: steigende Lohnniveaus, neue Erwerbsstrukturen und die Frage,
+          wie Rentenansprueche generationengerecht organisiert werden.
+        </p>
+      </drv-accordionitem>
+
+      <drv-accordionitem title="Transformationsphase: Digitalisierung und Nutzerorientierung" iconType="status-warning">
+        <p>
+          Heute werden komplexe Prozesse zunehmend digital umgesetzt. Das betrifft Antragstellung,
+          Auskunftssysteme und die Nachvollziehbarkeit individueller Versicherungsverlaeufe.
+        </p>
+      </drv-accordionitem>
+    </drv-accordion>
+  </section>
+
+  <section class="history-section media-grid">
+    <article>
+      <h2>Bildquellen aus der historischen Entwicklung</h2>
+      <p>
+        Die folgenden Motive zeigen den historischen Kontext: politische Akteure, gesetzliche Quellen,
+        die deutsche Wiedervereinigung und die heutige Institution in ihrer baulichen Praesenz.
+      </p>
+    </article>
+
+    <drv-media
+      [image]="bismarckImage"
+      caption="Otto von Bismarck (1873): Symbolfigur der fruehen Sozialgesetzgebung"
+      date="19. Jahrhundert"
+      copyright="Wikimedia Commons"
+    ></drv-media>
+
+    <drv-media
+      [image]="legalTextImage"
+      caption="Reichsgesetzblatt 1911: Normative Grundlage der Reichsversicherungsordnung"
+      date="1911"
+      copyright="Wikimedia Commons"
+    ></drv-media>
+
+    <drv-media
+      [image]="reunificationImage"
+      caption="Feier zur deutschen Einheit vor dem Reichstag"
+      date="1990"
+      copyright="Bundesarchiv / Wikimedia Commons"
+    ></drv-media>
+
+    <drv-media
+      [image]="drvBuildingImage"
+      caption="Gebaeude der Deutschen Rentenversicherung Bund in Berlin"
+      date="2021"
+      copyright="Wikimedia Commons"
+    ></drv-media>
+
+    <div class="source-block">
+      <h3>Bildnachweise</h3>
+      <ul class="drv-ul">
+        <li><a href="https://commons.wikimedia.org/wiki/File:Otto_von_Bismarck_portrait_1873.jpg" target="_blank">Otto von Bismarck portrait 1873</a></li>
+        <li><a href="https://commons.wikimedia.org/wiki/File:Deutsches_Reichsgesetzblatt_1911_003_0025.png" target="_blank">Reichsgesetzblatt 1911</a></li>
+        <li><a href="https://commons.wikimedia.org/wiki/File:Bundesarchiv_Bild_183-1990-1003-400,_Berlin,_deutsche_Vereinigung,_vor_dem_Reichstag.jpg" target="_blank">Bundesarchiv Bild zur Wiedervereinigung 1990</a></li>
+        <li><a href="https://commons.wikimedia.org/wiki/File:Geb%C3%A4ude_der_Deutschen_Rentenversicherung_Bund_seen_from_Drachenberg_Grunewald_2021-10-28_37.jpg" target="_blank">Gebaeude der DRV Bund (Berlin)</a></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="history-section">
+    <h2>Glossar: zentrale Begriffe der Rentenversicherung</h2>
+    <p>
+      Das Glossar erklaert die wichtigsten Fachbegriffe in kompakter Form und dient als Nachschlagehilfe.
+    </p>
+
+    <drv-accordion [multiselectable]="true" [showToggleAllButton]="true" headline="Glossar">
+      @for (entry of glossary; track entry.title) {
+        <drv-accordionitem [title]="entry.title" iconType="status-processing">
+          <p>{{ entry.text }}</p>
+        </drv-accordionitem>
+      }
+    </drv-accordion>
+  </section>
+
+  <section class="history-section">
+    <h2>Themenfelder der heutigen DRV</h2>
+    <div class="tile-grid">
+      <drv-tile
+        title="Versicherung und Beitrag"
+        pictogramType="finances"
+        [items]="['Beitraege melden', 'Versicherungszeiten pruefen', 'Konten klaeren']"
+        [route]="['/overview']"
+      ></drv-tile>
+
+      <drv-tile
+        title="Rentenarten und Ansprueche"
+        pictogramType="benefits"
+        [items]="['Altersrente', 'Erwerbsminderung', 'Hinterbliebenenrente']"
+        [route]="['/overview']"
+      ></drv-tile>
+
+      <drv-tile
+        title="Digitale Services"
+        pictogramType="digitizing"
+        [items]="['Online-Antraege', 'Sichere Kommunikation', 'Digitale Auskuenfte']"
+        [route]="['/overview']"
+      ></drv-tile>
+    </div>
+  </section>
+</drv-contentpage>

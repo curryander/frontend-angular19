@@ -1,0 +1,90 @@
+﻿<drv-applicationheader
+  triggerButtonLabel="Navigation anzeigen"
+  appTitle="Upload"
+  [fullWidth]="false"
+>
+  <drv-button label="Beenden" kind="secondary" iconType="close" [route]="['/']"></drv-button>
+</drv-applicationheader>
+
+<div drv-grid class="fd-page" [fullWidth]="false">
+  <div drv-row class="fd-layout">
+    <aside drv-col [sm]="4" [md]="12" [lg]="4" class="fd-sidebar">
+      <drv-progressnav progressNavTitle="Seitennavigation" [showOnMobile]="true">
+        <drv-progressnavnode
+          name="Upload"
+          [route]="['/upload']"
+          [current]="true"
+          [active]="true"
+          [completed]="false"
+        ></drv-progressnavnode>
+        <drv-progressnavnode
+          name="Summary"
+          [route]="['/summary']"
+          [current]="false"
+          [active]="false"
+          [completed]="false"
+        ></drv-progressnavnode>
+        <drv-progressnavnode
+          name="Process"
+          [route]="['/process']"
+          [current]="false"
+          [active]="false"
+          [completed]="false"
+        ></drv-progressnavnode>
+      </drv-progressnav>
+    </aside>
+
+    <main drv-col [sm]="4" [md]="12" [lg]="8" class="fd-content" id="main-content">
+      <section class="fd-section">
+        <h1>Nachweise hochladen</h1>
+        <p>
+          Laden Sie hier die benoetigten Unterlagen hoch. Bitte achten Sie darauf, dass alle Dokumente gut lesbar
+          und vollstaendig sind.
+        </p>
+        <drv-status icon="info" bgColor="ui-05">Erlaubte Formate: PDF, JPG, PNG. Maximal 10 MB je Datei.</drv-status>
+      </section>
+
+      <section class="fd-section">
+        <drv-textinput label="Versicherungsnummer" placeholder="Versicherungsnummer eingeben" [required]="true"></drv-textinput>
+
+        <drv-select
+          label="Art des Nachweises"
+          placeholder="Bitte waehlen"
+          [options]="documentTypeOptions"
+          [required]="true"
+        ></drv-select>
+
+        <drv-uploadfield
+          label="Datei hochladen"
+          variant="dropzone"
+          btnLabel="Datei auswaehlen"
+          dropzoneText="Datei hier ablegen oder auswaehlen"
+          accept=".pdf,.jpg,.jpeg,.png"
+          [multiple]="true"
+          [required]="true"
+        ></drv-uploadfield>
+
+        <drv-textarea
+          label="Hinweise zum Upload"
+          placeholder="Optional: z. B. fehlende Seiten oder Nachreichungshinweise"
+          [rows]="4"
+          optionalText="optional"
+        ></drv-textarea>
+
+        <drv-checkbox>
+          Ich bestaetige, dass die hochgeladenen Dokumente vollstaendig und wahrheitsgemaess sind.
+        </drv-checkbox>
+      </section>
+
+      <section class="fd-actions">
+        <drv-buttonbar placing="space-between" layoutMobile="block" [wrap]="true">
+          <drv-button label="Zurueck zur Startseite" kind="secondary" [route]="['/']"></drv-button>
+          <drv-button label="Weiter zu Summary" kind="primary" [route]="['/summary']"></drv-button>
+        </drv-buttonbar>
+      </section>
+    </main>
+  </div>
+</div>
+
+
+

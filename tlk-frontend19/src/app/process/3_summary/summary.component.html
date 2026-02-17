@@ -1,0 +1,70 @@
+﻿<drv-applicationheader
+  triggerButtonLabel="Navigation anzeigen"
+  appTitle="Summary"
+  [fullWidth]="false"
+>
+  <drv-button label="Beenden" kind="secondary" iconType="close" [route]="['/']"></drv-button>
+</drv-applicationheader>
+
+<div drv-grid class="fd-page" [fullWidth]="false">
+  <div drv-row class="fd-layout">
+    <aside drv-col [sm]="4" [md]="12" [lg]="4" class="fd-sidebar">
+      <drv-progressnav progressNavTitle="Seitennavigation" [showOnMobile]="true">
+        <drv-progressnavnode
+          name="Upload"
+          [route]="['/upload']"
+          [current]="false"
+          [active]="true"
+          [completed]="true"
+        ></drv-progressnavnode>
+        <drv-progressnavnode
+          name="Summary"
+          [route]="['/summary']"
+          [current]="true"
+          [active]="true"
+          [completed]="false"
+        ></drv-progressnavnode>
+        <drv-progressnavnode
+          name="Process"
+          [route]="['/process']"
+          [current]="false"
+          [active]="false"
+          [completed]="false"
+        ></drv-progressnavnode>
+      </drv-progressnav>
+    </aside>
+
+    <main drv-col [sm]="4" [md]="12" [lg]="8" class="fd-content" id="main-content">
+      <section class="fd-section">
+        <h1>Zusammenfassung</h1>
+        <p>
+          Bitte pruefen Sie alle Angaben vor dem Versand. Nach dem Absenden werden die Daten automatisiert geprueft
+          und an die zustaendige Stelle weitergeleitet.
+        </p>
+        <drv-status bgColor="ui-05">Es sind keine Pflichtangaben mehr offen.</drv-status>
+      </section>
+
+      <section class="fd-section">
+        <h2>Ihre Angaben im Ueberblick</h2>
+        <drv-table [data]="summaryData" [caption]="'Zusammenfassung der Eingaben'" [sortable]="true"></drv-table>
+      </section>
+
+      <section class="fd-section">
+        <h2>Naechster Schritt</h2>
+        <p>
+          Mit Klick auf <strong>Weiter zu Process</strong> starten Sie die Verarbeitung und uebermitteln den Vorgang.
+        </p>
+      </section>
+
+      <section class="fd-actions">
+        <drv-buttonbar placing="space-between" layoutMobile="block" [wrap]="true">
+          <drv-button label="Zurueck zu Upload" kind="secondary" [route]="['/upload']"></drv-button>
+          <drv-button label="Weiter zu Process" kind="primary" [route]="['/process']"></drv-button>
+        </drv-buttonbar>
+      </section>
+    </main>
+  </div>
+</div>
+
+
+

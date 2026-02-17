@@ -1,0 +1,14 @@
+﻿<router-outlet></router-outlet>
+<drv-footer
+  [items]="[
+    { href: '#impressum', text: 'Impressum' },
+    { href: '#datenschutz', text: 'Datenschutz' },
+    { href: '#barrierefreiheit', text: 'Barrierefreiheit' },
+    { text: 'Hilfe', href: '#hilfe', icon: 'question-mark' },
+    { text: 'DGS', htmltarget: '_blank', htmltitle: 'Deutsche Gebaerdensprache (Es oeffnet sich eine neue Seite.)', href: '#', icon: 'sign-language' },
+    { text: 'Leichte Sprache', htmltarget: '_blank', htmltitle: '(Es oeffnet sich eine neue Seite.)', href: '#', icon: 'easy-language' }
+  ]"
+  [copyright]="'© Deutsche Rentenversicherung 2026'"
+  [version]="'Version: 0.0.1'"
+  [fullWidth]="false"
+></drv-footer>

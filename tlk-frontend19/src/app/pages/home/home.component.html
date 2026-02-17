@@ -1,0 +1,95 @@
+<drv-header
+  [headerLogoSmallPath]="'assets/svg/drv-logo-the-lion-king-small.svg'"
+  [headerLogoPath]="'assets/svg/drv-logo-the-lion-king-large.svg'"
+  [fullWidth]="false"
+  [mainItems]="[
+  {text: 'Home', route: ['/home']},
+  {text: 'Upload', route: ['/upload']},
+  {text: 'Summary', route: ['/summary']},
+  {text: 'Process', route: ['/process']},
+  {text: 'Overview', route: ['overview']},
+   ]"
+></drv-header>
+<main>
+  <section class="home-hero">
+    <drv-status icon="info" bgColor="ui-05">
+      Digitale Antragshilfe fuer die Antragstellung in der Deutschen Rentenversicherung
+    </drv-status>
+    <h1>Was ist die Idee hinter der Anwendung?</h1>
+    <p>
+      Die Anwendung unterstuetzt bei der Antragstellung, indem hochgeladene Unterlagen automatisch analysiert,
+      aufgeteilt und den passenden Formularfeldern zugeordnet werden. Dadurch muss der Inhalt nicht mehrfach manuell
+      uebertragen werden.
+    </p>
+    <p>
+      Ziel ist ein sauberer, nachvollziehbarer und schneller Ablauf vom Upload bis zur Bearbeitung. Nutzer behalten
+      jederzeit die Kontrolle, weil alle erkannten Angaben geprueft und korrigiert werden koennen, bevor der Vorgang
+      weitergeht.
+    </p>
+    <div class="home-actions">
+      <drv-button label="Nachweise hochladen" kind="primary" [route]="['/upload']"></drv-button>
+      <drv-button label="Component Overview" kind="secondary" [route]="['/overview']"></drv-button>
+    </div>
+  </section>
+
+  <section class="home-section">
+    <h2>Was kann man mit der Anwendung machen?</h2>
+    <p>
+      Die Loesung verbindet Upload, strukturierte Zusammenfassung und Prozessfuehrung in einer Anwendung. Das hilft
+      sowohl bei der Erfassung als auch bei der spaeteren Bearbeitung in der Fachstelle.
+    </p>
+    <div class="feature-grid">
+      <article class="feature-card">
+        <h3>1. Dokumente strukturiert erfassen</h3>
+        <p>Unterlagen werden zentral hochgeladen und direkt in einem gefuehrten Ablauf verarbeitet.</p>
+      </article>
+      <article class="feature-card">
+        <h3>2. Angaben automatisch vorbefuellen</h3>
+        <p>Relevante Informationen aus Nachweisen werden erkannt und fuer die Eingabe vorbereitet.</p>
+      </article>
+      <article class="feature-card">
+        <h3>3. Bearbeitung vereinfachen</h3>
+        <p>Die Unterlagen kommen klar zugeordnet an. Das reduziert Rueckfragen und Nacharbeit.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="home-section">
+    <drv-table [data]="processTable" [caption]="'Vergleich heutiger Ablauf und Anwendung'" [sortable]="true"></drv-table>
+  </section>
+
+  <section class="home-section">
+    <drv-accordion [multiselectable]="true" [showToggleAllButton]="true" headline="Ausfuehrliche Einordnung">
+      <drv-accordionitem title="Welches Problem wird geloest?" [isOpen]="true" iconType="status-processing">
+        <p>
+          Bei Sammeldokumenten entstehen heute oft Medienbrueche: Daten werden aus Nachweisen in Formulare und spaeter
+          erneut in interne Systeme uebertragen. Das kostet Zeit und erhoeht die Fehlerquote.
+        </p>
+      </drv-accordionitem>
+      <drv-accordionitem title="Wie arbeitet die Anwendung?" iconType="status-processing">
+        <p>
+          Nach dem Upload werden Dokumente automatisch aufbereitet, relevante Inhalte extrahiert und sinnvoll
+          vorsortiert. Anschliessend kann jede erkannte Angabe fachlich geprueft werden.
+        </p>
+      </drv-accordionitem>
+      <drv-accordionitem title="Welcher Nutzen entsteht?" iconType="status-success">
+        <p>
+          Der Gesamtprozess wird schneller und robuster: weniger Doppelarbeit, weniger Rueckfragen, bessere
+          Antragsqualitaet und mehr Transparenz fuer alle Beteiligten.
+        </p>
+      </drv-accordionitem>
+      <drv-accordionitem title="Warum ist das relevant fuer alle DRV-Antraege?" iconType="status-success">
+        <p>
+          In der DRV werden je nach Antrag unterschiedliche Nachweise benoetigt. Eine automatische Vorstrukturierung
+          beschleunigt die Bearbeitung und schafft eine bessere Grundlage fuer die Entscheidung.
+        </p>
+      </drv-accordionitem>
+    </drv-accordion>
+  </section>
+
+  <section class="home-section home-section-last">
+    <drv-status bgColor="success">
+      Die Anwendung verbindet nutzerfreundliche Antragserfassung mit effizienter Weiterverarbeitung in der Fachstelle.
+    </drv-status>
+  </section>
+<main>

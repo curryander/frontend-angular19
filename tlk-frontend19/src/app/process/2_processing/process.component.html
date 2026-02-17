@@ -1,0 +1,72 @@
+﻿<drv-applicationheader
+  triggerButtonLabel="Navigation anzeigen"
+  appTitle="Process"
+  [fullWidth]="false"
+>
+  <drv-button label="Beenden" kind="secondary" iconType="close" [route]="['/']"></drv-button>
+</drv-applicationheader>
+
+<div drv-grid class="fd-page" [fullWidth]="false">
+  <div drv-row class="fd-layout">
+    <aside drv-col [sm]="4" [md]="12" [lg]="4" class="fd-sidebar">
+      <drv-progressnav progressNavTitle="Seitennavigation" [showOnMobile]="true">
+        <drv-progressnavnode
+          name="Upload"
+          [route]="['/upload']"
+          [current]="false"
+          [active]="true"
+          [completed]="true"
+        ></drv-progressnavnode>
+        <drv-progressnavnode
+          name="Summary"
+          [route]="['/summary']"
+          [current]="false"
+          [active]="true"
+          [completed]="true"
+        ></drv-progressnavnode>
+        <drv-progressnavnode
+          name="Process"
+          [route]="['/process']"
+          [current]="true"
+          [active]="true"
+          [completed]="false"
+        ></drv-progressnavnode>
+      </drv-progressnav>
+    </aside>
+
+    <main drv-col [sm]="4" [md]="12" [lg]="8" class="fd-content" id="main-content">
+      <section class="fd-section">
+        <h1>Verarbeitung und Versand</h1>
+        <p>
+          Ihre Unterlagen sind vorbereitet. Im letzten Schritt werden die Daten geprueft und an die Fachstelle uebermittelt.
+        </p>
+        <drv-status bgColor="success">Alle erforderlichen Eingaben liegen vor.</drv-status>
+      </section>
+
+      <section class="fd-section">
+        <h2>Prozessschritte</h2>
+        <drv-accordion [multiselectable]="true" [showToggleAllButton]="true" headline="Ablauf">
+          <drv-accordionitem title="1. Formale Pruefung" [isOpen]="true" iconType="status-processing">
+            <p>Dateiformate, Dateigroessen und Pflichtfelder werden automatisiert geprueft.</p>
+          </drv-accordionitem>
+          <drv-accordionitem title="2. Fachliche Zuordnung" iconType="status-processing">
+            <p>Der Vorgang wird dem zustaendigen Bearbeitungsteam zugeordnet.</p>
+          </drv-accordionitem>
+          <drv-accordionitem title="3. Rueckmeldung" iconType="status-success">
+            <p>Nach erfolgreicher Uebermittlung erhalten Sie eine Bestaetigung.</p>
+          </drv-accordionitem>
+        </drv-accordion>
+      </section>
+
+      <section class="fd-actions">
+        <drv-buttonbar placing="space-between" layoutMobile="block" [wrap]="true">
+          <drv-button label="Zurueck zu Summary" kind="secondary" [route]="['/summary']"></drv-button>
+          <drv-button label="Vorgang absenden" kind="primary" [route]="['/overview']"></drv-button>
+        </drv-buttonbar>
+      </section>
+    </main>
+  </div>
+</div>
+
+
+
