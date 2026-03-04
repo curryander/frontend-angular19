@@ -20,7 +20,7 @@
     "@angular/platform-browser": "^19.2.0",
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
-    "@drv-ds/drv-design-system-ng": "file:../../../Designsystem/drv-design-system-ng-7.20.1.tgz",
+    "@drv-ds/drv-design-system-ng": "file:./libs/drv-design-system-ng-7.20.1.tgz",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
