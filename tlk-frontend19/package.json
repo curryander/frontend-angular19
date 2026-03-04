@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng --configuration production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "openapi:pull": "powershell -ExecutionPolicy Bypass -File scripts/fetch-openapi.ps1",
