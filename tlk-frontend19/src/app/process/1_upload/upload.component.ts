@@ -45,7 +45,7 @@ export class UploadComponent {
   private readonly flowService = inject(StapleFlowService);
 
   readonly documentTypeOptions = [
-    { label: 'Bitte waehlen', value: '' },
+    { label: 'Bitte wählen', value: '' },
     { label: 'Geburtsurkunde', value: 'birth-certificate' },
     { label: 'Schulbescheinigung', value: 'school-certificate' },
     { label: 'Studienbescheinigung', value: 'study-certificate' },

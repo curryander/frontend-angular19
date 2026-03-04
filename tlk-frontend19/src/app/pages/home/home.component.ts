@@ -1,7 +1,6 @@
 ﻿import { Component } from '@angular/core';
 import {
   ButtonComponent,
-  HeaderComponent,
   PictogramComponent,
   StatusComponent,
   SummaryComponent,
@@ -13,7 +12,6 @@ import {
   selector: 'app-home',
   imports: [
     ButtonComponent,
-    HeaderComponent,
     PictogramComponent,
     StatusComponent,
     SummaryComponent,
@@ -27,22 +25,22 @@ import {
 export class HomeComponent {
   readonly insightProblem = {
     '':
-      'Bei Sammeldokumenten entstehen heute oft Medienbrueche: Daten werden aus Nachweisen in Formulare und spaeter erneut in interne Systeme uebertragen.',
+      'Bei Sammeldokumenten entstehen heute oft Medienbrüche: Daten werden aus Nachweisen in Formulare und später erneut in interne Systeme übertragen.',
   };
 
   readonly insightWorkflow = {
     '':
-      'Nach dem Upload werden Dokumente automatisch aufbereitet, relevante Inhalte extrahiert und sinnvoll vorsortiert. Anschliessend kann jede erkannte Angabe fachlich geprueft werden.',
+      'Nach dem Hochladen werden Dokumente automatisch aufbereitet, relevante Inhalte extrahiert und sinnvoll vorsortiert. Anschließend kann jede erkannte Angabe fachlich geprüft werden.',
   };
 
   readonly insightBenefit = {
     '':
-      'Der Gesamtprozess wird schneller und robuster: weniger Doppelarbeit, weniger Rueckfragen, bessere Antragsqualitaet und mehr Transparenz fuer alle Beteiligten.',
+      'Der Gesamtprozess wird schneller und robuster: weniger Doppelarbeit, weniger Rückfragen, bessere Antragsqualität und mehr Transparenz für alle Beteiligten.',
   };
 
   readonly insightRelevance = {
     '':
-      'In der DRV werden je nach Antrag unterschiedliche Nachweise benoetigt. Eine automatische Vorstrukturierung beschleunigt die Bearbeitung und schafft eine bessere Grundlage fuer die Entscheidung.',
+      'In der DRV werden je nach Antrag unterschiedliche Nachweise benötigt. Eine automatische Vorstrukturierung beschleunigt die Bearbeitung und schafft eine bessere Grundlage für die Entscheidung.',
   };
 
   readonly processTable: TableData = {
@@ -55,12 +53,12 @@ export class HomeComponent {
       [
         'Dokumentenaufnahme',
         'Unterlagen werden als Sammeldokument eingereicht',
-        'Upload direkt zum Antrag mit automatischer Analyse',
+        'Hochladen direkt zum Antrag mit automatischer Analyse',
       ],
       [
         'Datenerfassung',
-        'Angaben werden aus Dokumenten manuell uebertragen',
-        'Relevante Felder werden automatisch vorbefuellt und koennen geprueft werden',
+        'Angaben werden aus Dokumenten manuell übertragen',
+        'Relevante Felder werden automatisch vorbefüllt und können geprüft werden',
       ],
       [
         'Dokumentenstruktur',
@@ -69,9 +67,12 @@ export class HomeComponent {
       ],
       [
         'Bearbeitung',
-        'Rueckfragen und Nacharbeit bei unklaren Unterlagen',
-        'Hoehere Antragsqualitaet, weniger Doppelarbeit, schnellere Entscheidung',
+        'Rückfragen und Nacharbeit bei unklaren Unterlagen',
+        'Höhere Antragsqualität, weniger Doppelarbeit, schnellere Entscheidung',
       ],
     ],
   };
 }
+
+
+

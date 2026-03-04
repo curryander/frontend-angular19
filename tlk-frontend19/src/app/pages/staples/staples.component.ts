@@ -1,7 +1,7 @@
-import { Component, inject } from '@angular/core';
+﻿import { Component, inject } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { ButtonComponent, HeaderComponent } from '@drv-ds/drv-design-system-ng';
+import { ButtonComponent } from '@drv-ds/drv-design-system-ng';
 import { StapleFlowService } from '../../process/staple-flow.service';
 
 type StapleDocument = {
@@ -44,7 +44,7 @@ const STAPLE_DOCUMENT_PATHS = [
 
 @Component({
   selector: 'app-staples',
-  imports: [ButtonComponent, HeaderComponent],
+  imports: [ButtonComponent],
   standalone: true,
   templateUrl: './staples.component.html',
   styleUrl: './staples.component.scss',
@@ -62,7 +62,7 @@ export class StaplesComponent {
     const category = path.includes('/leicht/') ? 'Leicht' : 'Standard';
     const encodedPath = `/${encodeURI(path)}`;
     return {
-      title: `Staple ${index + 1}: ${fileName}`,
+      title: `Stapel ${index + 1}: ${fileName}`,
       category,
       url: encodedPath,
       previewUrl: this.sanitizer.bypassSecurityTrustResourceUrl(
@@ -133,3 +133,4 @@ export class StaplesComponent {
     }
   }
 }
+

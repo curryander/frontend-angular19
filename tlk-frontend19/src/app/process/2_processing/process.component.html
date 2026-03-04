@@ -1,67 +1,123 @@
-<drv-applicationheader
+﻿<drv-applicationheader
   triggerButtonLabel="Navigation anzeigen"
-  appTitle="Process"
-  [fullWidth]="false"
+  [appTitle]="headerTitle"
+  [fullWidth]="true"
 >
   <drv-button label="Abbrechen" kind="secondary" iconType="close" (buttonClick)="cancelFlow()"></drv-button>
 </drv-applicationheader>
 
-<div drv-grid class="fd-page" [fullWidth]="false">
+<div drv-grid class="fd-page" [fullWidth]="true">
   <div drv-row class="fd-layout">
-    <aside drv-col [sm]="4" [md]="12" [lg]="4" class="fd-sidebar">
-      <drv-progressnav progressNavTitle="Seitennavigation" [showOnMobile]="true">
-        <drv-progressnavnode
-          name="Upload"
-          [route]="['/upload']"
-          [current]="false"
-          [active]="true"
-          [completed]="true"
-        ></drv-progressnavnode>
-        <drv-progressnavnode
-          name="Process"
-          [route]="['/process']"
-          [current]="true"
-          [active]="true"
-          [completed]="false"
-        ></drv-progressnavnode>
-        <drv-progressnavnode
-          name="Summary"
-          [route]="['/summary']"
-          [current]="false"
-          [active]="false"
-          [completed]="false"
-        ></drv-progressnavnode>
-      </drv-progressnav>
+    <aside drv-col [sm]="4" [md]="12" [lg]="2" class="fd-sidebar">
+      <div class="fd-sidebar-stack">
+        <drv-progressnav progressNavTitle="Seitennavigation" [showOnMobile]="true">
+          <drv-progressnavnode
+            name="Hochladen"
+            [route]="['/upload']"
+            [current]="false"
+            [active]="true"
+            [completed]="true"
+          ></drv-progressnavnode>
+          <drv-progressnavnode
+            name="Prüfung"
+            [route]="['/process']"
+            [current]="true"
+            [active]="true"
+            [completed]="false"
+          ></drv-progressnavnode>
+          <drv-progressnavnode
+            name="Zusammenfassung"
+            [route]="['/summary']"
+            [current]="false"
+            [active]="false"
+            [completed]="false"
+          ></drv-progressnavnode>
+        </drv-progressnav>
+
+        <section class="fd-sidebar-panel" aria-label="Dokumentnavigation">
+          <h2>Dokumentauswahl</h2>
+          <ul class="fd-document-list">
+            @for (doc of documents; track doc.id; let i = $index) {
+              <li>
+                <button
+                  type="button"
+                  class="fd-document-item"
+                  [class.fd-document-item--active]="i === selectedDocumentIndex"
+                  (click)="selectDocument(i)"
+                >
+                  <span class="fd-document-title">{{ doc.title }}</span>
+                  <span class="fd-document-meta">{{ doc.pages }} Seiten</span>
+                  <span class="fd-document-meta">Status: {{ doc.status }}</span>
+                </button>
+              </li>
+            }
+          </ul>
+        </section>
+      </div>
     </aside>
 
-    <main drv-col [sm]="4" [md]="12" [lg]="8" class="fd-content" id="main-content">
+    <main drv-col [sm]="4" [md]="12" [lg]="10" class="fd-content" id="main-content">
       <section class="fd-section">
-        <h1>Verarbeitung und Versand</h1>
+        <h1>Prüfung von Dokumentenstapel und extrahierten Daten</h1>
         <p>
-          Ihre Unterlagen sind vorbereitet. Im letzten Schritt werden die Daten geprueft und an die Fachstelle uebermittelt.
+          Vergleichen Sie links den Dokumentenstapel mit den rechts extrahierten Angaben. Die Werte auf der rechten Seite
+          sind standardmäßig bearbeitbar.
         </p>
-        <drv-status bgColor="success">Alle erforderlichen Eingaben liegen vor.</drv-status>
+        <drv-status bgColor="ui-05">Prüfen und korrigieren Sie die Daten vor dem Abschluss.</drv-status>
       </section>
 
       <section class="fd-section">
-        <h2>Prozessschritte</h2>
-        <drv-accordion [multiselectable]="true" [showToggleAllButton]="true" headline="Ablauf">
-          <drv-accordionitem title="1. Formale Pruefung" [isOpen]="true" iconType="status-processing">
-            <p>Dateiformate, Dateigroessen und Pflichtfelder werden automatisiert geprueft.</p>
-          </drv-accordionitem>
-          <drv-accordionitem title="2. Fachliche Zuordnung" iconType="status-processing">
-            <p>Der Vorgang wird dem zustaendigen Bearbeitungsteam zugeordnet.</p>
-          </drv-accordionitem>
-          <drv-accordionitem title="3. Rueckmeldung" iconType="status-success">
-            <p>Nach erfolgreicher Uebermittlung erhalten Sie eine Bestaetigung.</p>
-          </drv-accordionitem>
-        </drv-accordion>
+        <div class="fd-compare-grid">
+          <article class="fd-pane">
+            <h2>Dokumentenansicht</h2>
+            <div class="fd-document-preview">
+              <h3>Ausgewähltes Dokument</h3>
+              <p><strong>ID:</strong> {{ selectedDocument.id }}</p>
+              <p><strong>Titel:</strong> {{ selectedDocument.title }}</p>
+              <p><strong>Zusammenfassung:</strong> {{ selectedDocument.summary }}</p>
+              <p><strong>Datum der Erfassung:</strong> {{ selectedDocument.capturedAt }}</p>
+              <p><strong>Status:</strong> {{ selectedDocument.status }}</p>
+            </div>
+
+            <div class="fd-preview-frame">
+              <iframe
+                [src]="selectedDocument.previewUrl"
+                title="Dokumentvorschau"
+                loading="lazy"
+              ></iframe>
+            </div>
+          </article>
+
+          <article class="fd-pane">
+            <h2>Extrahierte Daten</h2>
+
+            <section class="fd-kv-section">
+              <h3>Dokumentdaten</h3>
+              @for (field of selectedDocumentExtractFields; track field.key; let i = $index) {
+                <div class="fd-kv-row">
+                  <label class="fd-kv-key" [for]="'doc-field-' + i">{{ field.key }}</label>
+                  <input class="fd-kv-value" [id]="'doc-field-' + i" [name]="'doc-field-' + i" [(ngModel)]="field.value" />
+                </div>
+              }
+            </section>
+
+            <section class="fd-kv-section">
+              <h3>Stammsatz Versicherter</h3>
+              @for (field of selectedInsuredMasterDataFields; track field.key; let i = $index) {
+                <div class="fd-kv-row">
+                  <label class="fd-kv-key" [for]="'master-field-' + i">{{ field.key }}</label>
+                  <input class="fd-kv-value" [id]="'master-field-' + i" [name]="'master-field-' + i" [(ngModel)]="field.value" />
+                </div>
+              }
+            </section>
+          </article>
+        </div>
       </section>
 
       <section class="fd-actions">
         <drv-buttonbar placing="space-between" layoutMobile="block" [wrap]="true">
-          <drv-button label="Zurueck zu Upload" kind="secondary" (buttonClick)="backToUpload()"></drv-button>
-          <drv-button label="Weiter zu Summary" kind="primary" (buttonClick)="goToSummary()"></drv-button>
+          <drv-button label="Zurück zu Hochladen" kind="secondary" (buttonClick)="backToUpload()"></drv-button>
+          <drv-button label="Weiter zu Zusammenfassung" kind="primary" (buttonClick)="goToSummary()"></drv-button>
         </drv-buttonbar>
       </section>
     </main>

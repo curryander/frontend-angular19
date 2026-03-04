@@ -1,5 +1,5 @@
 ﻿.fd-page {
-  padding-block: 1rem 2rem;
+  padding: 1rem 0.75rem 2rem 0.25rem;
 }
 
 .fd-layout {
@@ -13,7 +13,8 @@
 
 .fd-content {
   display: grid;
-  gap: 1.5rem;
+  gap: 1.25rem;
+  padding-left: 0.25rem;
 }
 
 .fd-section {
@@ -32,5 +33,9 @@
 @media (max-width: 64.0425rem) {
   .fd-sidebar {
     position: static;
+  }
+
+  .fd-content {
+    padding-left: 0;
   }
 }

@@ -44,9 +44,9 @@ export class SummaryComponent {
       { label: 'Hinweis' },
     ],
     body: [
-      ['Persoenliche Angaben', 'Vollstaendig', 'Keine offenen Punkte'],
+      ['Persönliche Angaben', 'Vollständig', 'Keine offenen Punkte'],
       ['Dokumentenupload', '2 Dateien', 'Geburtsurkunde und Schulbescheinigung'],
-      ['Pruefung', 'Ausstehend', 'Automatische Plausibilitaetspruefung laeuft bei Versand'],
+      ['Prüfung', 'Ausstehend', 'Automatische Plausibilitätsprüfung läuft bei Versand'],
       ['Kontakt', 'Optional', 'E-Mail-Adresse wurde angegeben'],
     ],
   };

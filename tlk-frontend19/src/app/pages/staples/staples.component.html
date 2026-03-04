@@ -1,22 +1,11 @@
-<drv-header
-  [headerLogoSmallPath]="'assets/svg/drv-logo-the-lion-king-small.svg'"
-  [headerLogoPath]="'assets/svg/drv-logo-the-lion-king-large.svg'"
-  [fullWidth]="false"
-  [mainItems]="[
-  {text: 'Home', route: ['/home']},
-  {text: 'Staples', route: ['/staples']},
-  {text: 'Overview', route: ['/overview']},
-   ]"
-></drv-header>
-
-<main>
+﻿<main>
   <section class="staples-hero">
-    <h1>Document Staples</h1>
+    <h1>Dokumentenstapel</h1>
     <p>
-      Erstellen Sie einen neuen Dokumenten-Staple und durchlaufen Sie den gefuehrten Ablauf aus Upload, Processing und Summary.
+      Erstellen Sie einen neuen Dokumentenstapel und durchlaufen Sie den Ablauf aus Hochladen, Prüfung und Zusammenfassung.
     </p>
     <div class="staples-actions">
-      <drv-button label="+ add a document staple" kind="primary" (buttonClick)="startStapleFlow()"></drv-button>
+      <drv-button label="+ Dokumentenstapel anlegen" kind="primary" (buttonClick)="startStapleFlow()"></drv-button>
     </div>
   </section>
 
@@ -24,22 +13,22 @@
     <h2>Ablauf</h2>
     <div class="feature-grid">
       <article class="feature-card">
-        <h3>1. Upload</h3>
+        <h3>1. Hochladen</h3>
         <p>Dokumente hochladen und die Eingaben vorbereiten.</p>
       </article>
       <article class="feature-card">
-        <h3>2. Processing</h3>
-        <p>Dokumente verarbeiten und den Vorgang fachlich pruefen.</p>
+        <h3>2. Prüfung</h3>
+        <p>Dokumente verarbeiten und den Vorgang fachlich prüfen.</p>
       </article>
       <article class="feature-card">
-        <h3>3. Summary</h3>
-        <p>Zusammenfassung kontrollieren und den Staple abschliessen.</p>
+        <h3>3. Zusammenfassung</h3>
+        <p>Zusammenfassung kontrollieren und den Stapel abschließen.</p>
       </article>
     </div>
   </section>
 
   <section class="staples-section">
-    <h2>Gallery</h2>
+    <h2>Galerie</h2>
     @defer (on idle) {
       <div class="staple-gallery-grid">
         @for (doc of visibleStapleDocuments; track doc.url) {
@@ -60,7 +49,7 @@
             }
             <p class="staple-gallery-category">{{ doc.category }}</p>
             <h3>{{ doc.title }}</h3>
-            <p class="staple-gallery-meta">Hinzugefuegt am: {{ doc.addedAt }}</p>
+            <p class="staple-gallery-meta">Hinzugefügt am: {{ doc.addedAt }}</p>
             <p class="staple-gallery-meta">
               Seiten:
               @if (doc.pageCountLoading) {
@@ -68,21 +57,21 @@
               } @else if (doc.pageCount !== null && doc.pageCount >= 0) {
                 {{ doc.pageCount }}
               } @else {
-                nicht verfuegbar
+                nicht verfügbar
               }
             </p>
-            <a [href]="doc.url" target="_blank" rel="noopener noreferrer">PDF oeffnen</a>
+            <a [href]="doc.url" target="_blank" rel="noopener noreferrer">PDF öffnen</a>
           </article>
         }
       </div>
 
       @if (hasMoreDocuments()) {
         <div class="staple-gallery-actions">
-          <drv-button label="load more" kind="secondary" (buttonClick)="loadMoreDocuments()"></drv-button>
+          <drv-button label="Mehr laden" kind="secondary" (buttonClick)="loadMoreDocuments()"></drv-button>
         </div>
       }
     } @placeholder {
-      <p>Gallery wird geladen...</p>
+      <p>Galerie wird geladen...</p>
     }
   </section>
 </main>

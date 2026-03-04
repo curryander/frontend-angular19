@@ -1,32 +1,32 @@
-<drv-applicationheader
+﻿<drv-applicationheader
   triggerButtonLabel="Navigation anzeigen"
-  appTitle="Summary"
-  [fullWidth]="false"
+  appTitle="Zusammenfassung"
+  [fullWidth]="true"
 >
   <drv-button label="Abbrechen" kind="secondary" iconType="close" (buttonClick)="cancelFlow()"></drv-button>
   <drv-button label="Beenden" kind="secondary" (buttonClick)="finishFlow()"></drv-button>
 </drv-applicationheader>
 
-<div drv-grid class="fd-page" [fullWidth]="false">
+<div drv-grid class="fd-page" [fullWidth]="true">
   <div drv-row class="fd-layout">
-    <aside drv-col [sm]="4" [md]="12" [lg]="4" class="fd-sidebar">
+    <aside drv-col [sm]="4" [md]="12" [lg]="2" class="fd-sidebar">
       <drv-progressnav progressNavTitle="Seitennavigation" [showOnMobile]="true">
         <drv-progressnavnode
-          name="Upload"
+          name="Hochladen"
           [route]="['/upload']"
           [current]="false"
           [active]="true"
           [completed]="true"
         ></drv-progressnavnode>
         <drv-progressnavnode
-          name="Process"
+          name="Prüfung"
           [route]="['/process']"
           [current]="false"
           [active]="true"
           [completed]="true"
         ></drv-progressnavnode>
         <drv-progressnavnode
-          name="Summary"
+          name="Zusammenfassung"
           [route]="['/summary']"
           [current]="true"
           [active]="true"
@@ -35,25 +35,25 @@
       </drv-progressnav>
     </aside>
 
-    <main drv-col [sm]="4" [md]="12" [lg]="8" class="fd-content" id="main-content">
+    <main drv-col [sm]="4" [md]="12" [lg]="10" class="fd-content" id="main-content">
       <section class="fd-section">
         <h1>Zusammenfassung</h1>
         <p>
-          Bitte pruefen Sie alle Angaben vor dem Versand. Nach dem Absenden werden die Daten automatisiert geprueft
-          und an die zustaendige Stelle weitergeleitet.
+          Bitte prüfen Sie alle Angaben vor dem Versand. Nach dem Absenden werden die Daten automatisiert geprüft
+          und an die zuständige Stelle weitergeleitet.
         </p>
         <drv-status bgColor="ui-05">Es sind keine Pflichtangaben mehr offen.</drv-status>
       </section>
 
       <section class="fd-section">
-        <h2>Ihre Angaben im Ueberblick</h2>
+        <h2>Ihre Angaben im Überblick</h2>
         <drv-table [data]="summaryData" [caption]="'Zusammenfassung der Eingaben'" [sortable]="true"></drv-table>
       </section>
 
       <section class="fd-actions">
         <drv-buttonbar placing="space-between" layoutMobile="block" [wrap]="true">
-          <drv-button label="Zurueck zu Process" kind="secondary" (buttonClick)="backToProcess()"></drv-button>
-          <drv-button label="Beenden" kind="primary" (buttonClick)="finishFlow()"></drv-button>
+          <drv-button label="Zurück zu Prüfung" kind="secondary" (buttonClick)="backToProcess()"></drv-button>
+          <drv-button label="Vorgang beenden" kind="primary" (buttonClick)="finishFlow()"></drv-button>
         </drv-buttonbar>
       </section>
     </main>

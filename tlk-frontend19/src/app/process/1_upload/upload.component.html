@@ -1,31 +1,31 @@
-<drv-applicationheader
+﻿<drv-applicationheader
   triggerButtonLabel="Navigation anzeigen"
-  appTitle="Upload"
-  [fullWidth]="false"
+  appTitle="Hochladen"
+  [fullWidth]="true"
 >
   <drv-button label="Abbrechen" kind="secondary" iconType="close" (buttonClick)="cancelFlow()"></drv-button>
 </drv-applicationheader>
 
-<div drv-grid class="fd-page" [fullWidth]="false">
+<div drv-grid class="fd-page" [fullWidth]="true">
   <div drv-row class="fd-layout">
-    <aside drv-col [sm]="4" [md]="12" [lg]="4" class="fd-sidebar">
+    <aside drv-col [sm]="4" [md]="12" [lg]="2" class="fd-sidebar">
       <drv-progressnav progressNavTitle="Seitennavigation" [showOnMobile]="true">
         <drv-progressnavnode
-          name="Upload"
+          name="Hochladen"
           [route]="['/upload']"
           [current]="true"
           [active]="true"
           [completed]="false"
         ></drv-progressnavnode>
         <drv-progressnavnode
-          name="Process"
+          name="Prüfung"
           [route]="['/process']"
           [current]="false"
           [active]="false"
           [completed]="false"
         ></drv-progressnavnode>
         <drv-progressnavnode
-          name="Summary"
+          name="Zusammenfassung"
           [route]="['/summary']"
           [current]="false"
           [active]="false"
@@ -34,12 +34,12 @@
       </drv-progressnav>
     </aside>
 
-    <main drv-col [sm]="4" [md]="12" [lg]="8" class="fd-content" id="main-content">
+    <main drv-col [sm]="4" [md]="12" [lg]="10" class="fd-content" id="main-content">
       <section class="fd-section">
         <h1>Nachweise hochladen</h1>
         <p>
-          Laden Sie hier die benoetigten Unterlagen hoch. Bitte achten Sie darauf, dass alle Dokumente gut lesbar
-          und vollstaendig sind.
+          Laden Sie hier die benötigten Unterlagen hoch. Bitte achten Sie darauf, dass alle Dokumente gut lesbar
+          und vollständig sind.
         </p>
         <drv-status icon="info" bgColor="ui-05">Erlaubte Formate: PDF, JPG, PNG. Maximal 10 MB je Datei.</drv-status>
       </section>
@@ -49,7 +49,7 @@
 
         <drv-select
           label="Art des Nachweises"
-          placeholder="Bitte waehlen"
+          placeholder="Bitte wählen"
           [options]="documentTypeOptions"
           [required]="true"
         ></drv-select>
@@ -57,29 +57,29 @@
         <drv-uploadfield
           label="Datei hochladen"
           variant="dropzone"
-          btnLabel="Datei auswaehlen"
-          dropzoneText="Datei hier ablegen oder auswaehlen"
+          btnLabel="Datei auswählen"
+          dropzoneText="Datei hier ablegen oder auswählen"
           accept=".pdf,.jpg,.jpeg,.png"
           [multiple]="true"
           [required]="true"
         ></drv-uploadfield>
 
         <drv-textarea
-          label="Hinweise zum Upload"
+          label="Hinweise zum Hochladen"
           placeholder="Optional: z. B. fehlende Seiten oder Nachreichungshinweise"
           [rows]="4"
           optionalText="optional"
         ></drv-textarea>
 
         <drv-checkbox>
-          Ich bestaetige, dass die hochgeladenen Dokumente vollstaendig und wahrheitsgemaess sind.
+          Ich bestätige, dass die hochgeladenen Dokumente vollständig und wahrheitsgemäß sind.
         </drv-checkbox>
       </section>
 
       <section class="fd-actions">
         <drv-buttonbar placing="space-between" layoutMobile="block" [wrap]="true">
-          <drv-button label="Zurueck zu Staples" kind="secondary" (buttonClick)="cancelFlow()"></drv-button>
-          <drv-button label="Weiter zu Process" kind="primary" (buttonClick)="goToProcess()"></drv-button>
+          <drv-button label="Zurück zu Dokumentenstapel" kind="secondary" (buttonClick)="cancelFlow()"></drv-button>
+          <drv-button label="Weiter zu Prüfung" kind="primary" (buttonClick)="goToProcess()"></drv-button>
         </drv-buttonbar>
       </section>
     </main>

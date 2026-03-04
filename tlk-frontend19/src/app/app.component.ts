@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import {FooterComponent} from '@drv-ds/drv-design-system-ng';
+import { FooterComponent } from '@drv-ds/drv-design-system-ng';
 
 
 @Component({

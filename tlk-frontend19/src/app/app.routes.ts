@@ -1,15 +1,7 @@
-import { Routes } from '@angular/router';
+﻿import { Routes } from '@angular/router';
 import { processStepGuard, summaryStepGuard } from './process/staple-flow.guards';
 
 export const routes: Routes = [
-  {
-    path: 'home',
-    loadComponent: () => import('./pages/home/home.component').then((m) => m.HomeComponent),
-  },
-  {
-    path: 'staples',
-    loadComponent: () => import('./pages/staples/staples.component').then((m) => m.StaplesComponent),
-  },
   {
     path: 'upload',
     loadComponent: () => import('./process/1_upload/upload.component').then((m) => m.UploadComponent),
@@ -25,8 +17,27 @@ export const routes: Routes = [
     loadComponent: () => import('./process/3_summary/summary.component').then((m) => m.SummaryComponent),
   },
   {
-    path: 'overview',
-    loadComponent: () => import('./pages/overview/overview.component').then((m) => m.OverviewComponent),
+    path: '',
+    loadComponent: () => import('./pages/pages.component').then((m) => m.PagesComponent),
+    children: [
+      {
+        path: 'home',
+        loadComponent: () => import('./pages/home/home.component').then((m) => m.HomeComponent),
+      },
+      {
+        path: 'staples',
+        loadComponent: () => import('./pages/staples/staples.component').then((m) => m.StaplesComponent),
+      },
+      {
+        path: 'history',
+        loadComponent: () => import('./pages/history/history.component').then((m) => m.HistoryComponent),
+      },
+      {
+        path: '',
+        redirectTo: 'home',
+        pathMatch: 'full',
+      },
+    ],
   },
   {
     path: '**',
@@ -34,3 +45,5 @@ export const routes: Routes = [
     pathMatch: 'full',
   },
 ];
+
+

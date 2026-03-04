@@ -1,53 +1,43 @@
-<drv-header
-  [headerLogoSmallPath]="'assets/svg/drv-logo-the-lion-king-small.svg'"
-  [headerLogoPath]="'assets/svg/drv-logo-the-lion-king-large.svg'"
-  [fullWidth]="false"
-  [mainItems]="[
-  {text: 'Home', route: ['/home']},
-  {text: 'Staples', route: ['/staples']},
-  {text: 'Overview', route: ['/overview']},
-   ]"
-></drv-header>
-<main>
+﻿<main>
   <section class="home-hero">
     <drv-status icon="info" bgColor="ui-05">
-      Digitale Antragshilfe fuer die Antragstellung in der Deutschen Rentenversicherung
+      Digitale Antragshilfe für die Antragstellung in der Deutschen Rentenversicherung
     </drv-status>
     <h1>Was ist die Idee hinter der Anwendung?</h1>
     <p>
-      Die Anwendung unterstuetzt bei der Antragstellung, indem hochgeladene Unterlagen automatisch analysiert,
+      Die Anwendung unterstützt bei der Antragstellung, indem hochgeladene Unterlagen automatisch analysiert,
       aufgeteilt und den passenden Formularfeldern zugeordnet werden. Dadurch muss der Inhalt nicht mehrfach manuell
-      uebertragen werden.
+      übertragen werden.
     </p>
     <p>
-      Ziel ist ein sauberer, nachvollziehbarer und schneller Ablauf vom Upload bis zur Bearbeitung. Nutzer behalten
-      jederzeit die Kontrolle, weil alle erkannten Angaben geprueft und korrigiert werden koennen, bevor der Vorgang
+      Ziel ist ein sauberer, nachvollziehbarer und schneller Ablauf vom Hochladen bis zur Bearbeitung. Nutzer behalten
+      jederzeit die Kontrolle, weil alle erkannten Angaben geprüft und korrigiert werden können, bevor der Vorgang
       weitergeht.
     </p>
     <div class="home-actions">
       <drv-button label="Dokumentenstapel ansehen" kind="primary" [route]="['/staples']"></drv-button>
-      <drv-button label="Component Overview" kind="secondary" [route]="['/overview']"></drv-button>
+      <drv-button label="Geschichte der DRV" kind="secondary" [route]="['/history']"></drv-button>
     </div>
   </section>
 
   <section class="home-section">
     <h2>Was kann man mit der Anwendung machen?</h2>
     <p>
-      Die Loesung verbindet Upload, strukturierte Zusammenfassung und Prozessfuehrung in einer Anwendung. Das hilft
-      sowohl bei der Erfassung als auch bei der spaeteren Bearbeitung in der Fachstelle.
+      Die Lösung verbindet Hochladen, strukturierte Zusammenfassung und Prozessführung in einer Anwendung. Das hilft
+      sowohl bei der Erfassung als auch bei der späteren Bearbeitung in der Fachstelle.
     </p>
     <div class="feature-grid">
       <article class="feature-card">
         <h3>1. Dokumente strukturiert erfassen</h3>
-        <p>Unterlagen werden zentral hochgeladen und direkt in einem gefuehrten Ablauf verarbeitet.</p>
+        <p>Unterlagen werden zentral hochgeladen und direkt in einem geführten Ablauf verarbeitet.</p>
       </article>
       <article class="feature-card">
-        <h3>2. Angaben automatisch vorbefuellen</h3>
-        <p>Relevante Informationen aus Nachweisen werden erkannt und fuer die Eingabe vorbereitet.</p>
+        <h3>2. Angaben automatisch vorbefüllen</h3>
+        <p>Relevante Informationen aus Nachweisen werden erkannt und für die Eingabe vorbereitet.</p>
       </article>
       <article class="feature-card">
         <h3>3. Bearbeitung vereinfachen</h3>
-        <p>Die Unterlagen kommen klar zugeordnet an. Das reduziert Rueckfragen und Nacharbeit.</p>
+        <p>Die Unterlagen kommen klar zugeordnet an. Das reduziert Rückfragen und Nacharbeit.</p>
       </article>
     </div>
   </section>
@@ -57,7 +47,7 @@
   </section>
 
   <section class="home-section">
-    <h2>Ausfuehrliche Einordnung</h2>
+    <h2>Ausführliche Einordnung</h2>
     <div class="home-insight-grid">
       <article class="home-insight-card">
         <div class="home-insight-head">
@@ -96,3 +86,5 @@
     </drv-status>
   </section>
 </main>
+
+
