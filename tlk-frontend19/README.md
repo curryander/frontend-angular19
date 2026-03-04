@@ -57,3 +57,15 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+## OpenAPI
+
+Die API-Beschreibung wird von `http://localhost:8181/v3/api-docs` geladen.
+
+```bash
+npm run openapi:check
+npm run openapi:pull
+```
+
+- `openapi:check` prüft, ob die API erreichbar ist und zeigt Basisinformationen an.
+- `openapi:pull` speichert die aktuelle Spezifikation in `src/app/api/openapi.json`.

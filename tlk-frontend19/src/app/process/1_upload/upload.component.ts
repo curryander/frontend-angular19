@@ -1,4 +1,5 @@
-import { Component, inject } from '@angular/core';
+﻿import { Component, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
   ApplicationHeaderComponent,
@@ -10,7 +11,6 @@ import {
   ProgressnavComponent,
   ProgressnavNodeComponent,
   RowDirective,
-  SelectBoxComponent,
   StatusComponent,
   TextareaComponent,
   TextinputComponent,
@@ -26,11 +26,11 @@ import { StapleFlowService } from '../staple-flow.service';
     ButtonbarComponent,
     CheckboxComponent,
     ColDirective,
+    FormsModule,
     GridDirective,
     ProgressnavComponent,
     ProgressnavNodeComponent,
     RowDirective,
-    SelectBoxComponent,
     StatusComponent,
     TextareaComponent,
     TextinputComponent,
@@ -43,14 +43,13 @@ import { StapleFlowService } from '../staple-flow.service';
 export class UploadComponent {
   private readonly router = inject(Router);
   private readonly flowService = inject(StapleFlowService);
+  private readonly maxTotalFileSizeBytes = 1024 * 1024 * 1024;
+  private readonly maxDocumentCount = 5;
 
-  readonly documentTypeOptions = [
-    { label: 'Bitte wählen', value: '' },
-    { label: 'Geburtsurkunde', value: 'birth-certificate' },
-    { label: 'Schulbescheinigung', value: 'school-certificate' },
-    { label: 'Studienbescheinigung', value: 'study-certificate' },
-    { label: 'Sonstiger Nachweis', value: 'other' },
-  ];
+  selectedFiles: FileList | null = null;
+  isConfirmationChecked = false;
+  uploadError = '';
+  hasInteractedWithRequiredFields = false;
 
   cancelFlow(): void {
     this.flowService.resetFlow();
@@ -58,7 +57,111 @@ export class UploadComponent {
   }
 
   goToProcess(): void {
+    this.hasInteractedWithRequiredFields = true;
+
+    if (this.uploadError) {
+      return;
+    }
+
+    if (!this.selectedFileCount || !this.isConfirmationChecked) {
+      return;
+    }
+
     this.flowService.completeUpload();
     void this.router.navigate(['/process']);
+  }
+
+  onFilesSelected(files: FileList | null): void {
+    this.hasInteractedWithRequiredFields = true;
+    this.selectedFiles = files;
+    this.validateSelection();
+  }
+
+  onConfirmationChange(value: boolean): void {
+    this.hasInteractedWithRequiredFields = true;
+    this.isConfirmationChecked = value;
+  }
+
+  removeSelectedFile(fileIndex: number): void {
+    this.hasInteractedWithRequiredFields = true;
+    const updatedFiles = this.selectedFileList.filter((_, index) => index !== fileIndex);
+    this.selectedFiles = this.toFileList(updatedFiles);
+    this.validateSelection();
+  }
+
+  get canContinue(): boolean {
+    return !this.uploadError && this.selectedFileCount > 0 && this.isConfirmationChecked;
+  }
+
+  get missingRequiredError(): string {
+    if (!this.hasInteractedWithRequiredFields || this.uploadError || this.canContinue) {
+      return '';
+    }
+    return 'Bitte wählen Sie mindestens eine PDF-Datei aus und bestätigen Sie die Erklärung.';
+  }
+
+  get selectedFileList(): File[] {
+    if (!this.selectedFiles || this.selectedFiles.length === 0) {
+      return [];
+    }
+
+    const files: File[] = [];
+    for (let index = 0; index < this.selectedFiles.length; index += 1) {
+      const file = this.selectedFiles.item(index);
+      if (file) {
+        files.push(file);
+      }
+    }
+    return files;
+  }
+
+  get selectedFileCount(): number {
+    return this.selectedFileList.length;
+  }
+
+  get selectedFileSizeTotalMb(): string {
+    const totalBytes = this.selectedFileList.reduce((sum, file) => sum + file.size, 0);
+    return (totalBytes / (1024 * 1024)).toFixed(2);
+  }
+
+  private validateSelection(): void {
+    this.uploadError = '';
+
+    const files = this.selectedFileList;
+    if (files.length === 0) {
+      return;
+    }
+
+    const validationMessages: string[] = [];
+    const invalidFiles = files
+      .filter((file) => !file.name.toLowerCase().endsWith('.pdf'))
+      .map((file) => file.name);
+    const totalBytes = files.reduce((sum, file) => sum + file.size, 0);
+
+    if (invalidFiles.length > 0) {
+      validationMessages.push(`Nur PDF-Dateien sind erlaubt. Ungültige Datei(en): ${invalidFiles.join(', ')}`);
+    }
+
+    if (files.length > this.maxDocumentCount) {
+      validationMessages.push(`Es sind maximal ${this.maxDocumentCount} Dokumente erlaubt.`);
+    }
+
+    if (totalBytes > this.maxTotalFileSizeBytes) {
+      validationMessages.push('Die Gesamtgröße aller Dokumente darf 1 GB nicht überschreiten.');
+    }
+
+    this.uploadError = validationMessages.join(' ');
+  }
+
+  private toFileList(files: File[]): FileList | null {
+    if (files.length === 0) {
+      return null;
+    }
+
+    const dataTransfer = new DataTransfer();
+    for (const file of files) {
+      dataTransfer.items.add(file);
+    }
+    return dataTransfer.files;
   }
 }

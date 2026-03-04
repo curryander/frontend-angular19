@@ -1,5 +1,6 @@
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
 
 import { routes } from './app.routes';
 import {CONFIG_TOKEN, DEFAULT_CONFIG_PRODUCTIVE} from '@drv-ds/drv-design-system-ng';
@@ -8,6 +9,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
+    provideHttpClient(),
     {
       provide: CONFIG_TOKEN,
       useValue: {

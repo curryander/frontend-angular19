@@ -41,28 +41,48 @@
           Laden Sie hier die benötigten Unterlagen hoch. Bitte achten Sie darauf, dass alle Dokumente gut lesbar
           und vollständig sind.
         </p>
-        <drv-status icon="info" bgColor="ui-05">Erlaubte Formate: PDF, JPG, PNG. Maximal 10 MB je Datei.</drv-status>
+        <drv-status icon="info" bgColor="ui-05">
+          Erlaubtes Format: PDF. Es können bis zu 5 Dokumente mit insgesamt maximal 1 GB hochgeladen werden.
+        </drv-status>
       </section>
 
       <section class="fd-section">
-        <drv-textinput label="Versicherungsnummer" placeholder="Versicherungsnummer eingeben" [required]="true"></drv-textinput>
-
-        <drv-select
-          label="Art des Nachweises"
-          placeholder="Bitte wählen"
-          [options]="documentTypeOptions"
-          [required]="true"
-        ></drv-select>
+        <drv-textinput
+          label="Versicherungsnummer"
+          placeholder="Versicherungsnummer eingeben"
+          [required]="false"
+          optionalText="optional"
+        ></drv-textinput>
 
         <drv-uploadfield
           label="Datei hochladen"
           variant="dropzone"
           btnLabel="Datei auswählen"
           dropzoneText="Datei hier ablegen oder auswählen"
-          accept=".pdf,.jpg,.jpeg,.png"
+          accept=".pdf"
           [multiple]="true"
           [required]="true"
+          [ngModel]="selectedFiles"
+          (ngModelChange)="onFilesSelected($event)"
         ></drv-uploadfield>
+
+        @if (selectedFileCount > 0) {
+          <div class="fd-upload-summary" aria-live="polite">
+            <p>{{ selectedFileCount }} Datei(en) ausgewählt, Gesamtgröße: {{ selectedFileSizeTotalMb }} MB</p>
+            <ul class="fd-upload-list">
+              @for (file of selectedFileList; track file.name + file.size; let index = $index) {
+                <li>
+                  <span>{{ file.name }} ({{ (file.size / (1024 * 1024)).toFixed(2) }} MB)</span>
+                  <button type="button" class="fd-remove-file" (click)="removeSelectedFile(index)">Entfernen</button>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+
+        @if (uploadError) {
+          <p class="fd-error" role="alert">{{ uploadError }}</p>
+        }
 
         <drv-textarea
           label="Hinweise zum Hochladen"
@@ -71,15 +91,23 @@
           optionalText="optional"
         ></drv-textarea>
 
-        <drv-checkbox>
+        <drv-checkbox
+          name="upload-confirmation"
+          [ngModel]="isConfirmationChecked"
+          (ngModelChange)="onConfirmationChange($event)"
+        >
           Ich bestätige, dass die hochgeladenen Dokumente vollständig und wahrheitsgemäß sind.
         </drv-checkbox>
+
+        @if (missingRequiredError) {
+          <p class="fd-error" role="alert">{{ missingRequiredError }}</p>
+        }
       </section>
 
       <section class="fd-actions">
         <drv-buttonbar placing="space-between" layoutMobile="block" [wrap]="true">
           <drv-button label="Zurück zu Dokumentenstapel" kind="secondary" (buttonClick)="cancelFlow()"></drv-button>
-          <drv-button label="Weiter zu Prüfung" kind="primary" (buttonClick)="goToProcess()"></drv-button>
+          <drv-button label="Verarbeitung starten" kind="primary" [disabled]="!canContinue" (buttonClick)="goToProcess()"></drv-button>
         </drv-buttonbar>
       </section>
     </main>

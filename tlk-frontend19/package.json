@@ -6,7 +6,9 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "openapi:pull": "powershell -ExecutionPolicy Bypass -File scripts/fetch-openapi.ps1",
+    "openapi:check": "powershell -ExecutionPolicy Bypass -File scripts/check-openapi.ps1"
   },
   "private": true,
   "dependencies": {
