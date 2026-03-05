@@ -47,7 +47,7 @@ export class UploadComponent {
   private readonly maxDocumentCount = 1;
 
   selectedFiles: FileList | null = null;
-  insuranceNumber = '';
+  insuranceNumber = '12 150890 M 123';
   isConfirmationChecked = false;
   uploadError = '';
   startError = '';
