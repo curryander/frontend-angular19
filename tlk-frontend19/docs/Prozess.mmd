@@ -1,0 +1,33 @@
+flowchart LR
+
+subgraph FE [Frontend Angular Wizard]
+A1[Upload Seite]
+A2[User waehlt Dokumentenstapel]
+A3[Button Upload klicken]
+A4[Wechsel zur Seite Pruefung]
+A5[Pruefung Ergebnisse anzeigen]
+A6[Optional LLM Verarbeitung starten]
+end
+
+subgraph BE [Backend Spring Boot]
+B1[createVorgangWithUpload POST /api/v1/vorgaenge]
+B2[Response VorgangId und StapelId]
+B3[Async Pipeline Split Pages Docling Persist]
+B4["getVorgangWorkflowStatus GET /api/v1/vorgaenge/{vorgangId}"]
+B5["getDokumentenstapelPages GET /api/v1/dokumentenstapel/{stapelId}/pages"]
+B6["getPageExtract GET /api/v1/pages/{pageId}/extract"]
+end
+
+A1 --> A2
+A2 --> A3
+A3 --> B1
+B1 --> B2
+B2 --> A4
+B2 --> B3
+
+A4 --> A5
+A5 --> B4
+A5 --> B5
+A5 --> B6
+
+A6 -. optional .-> LLM[LLM Verarbeitung]

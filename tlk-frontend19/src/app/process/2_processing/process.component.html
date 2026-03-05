@@ -34,27 +34,27 @@
           ></drv-progressnavnode>
         </drv-progressnav>
 
-        <section class="fd-sidebar-panel" aria-label="Dokumentnavigation">
-          <h2>Dokumentauswahl</h2>
-          @if (documents.length > 0) {
+        <section class="fd-sidebar-panel" aria-label="Seitennavigation Ergebnisliste">
+          <h2>Seiten</h2>
+          @if (pages.length > 0) {
             <ul class="fd-document-list">
-              @for (doc of documents; track doc.id; let i = $index) {
+              @for (page of pages; track page.pageId; let i = $index) {
                 <li>
                   <button
                     type="button"
                     class="fd-document-item"
-                    [class.fd-document-item--active]="i === selectedDocumentIndex"
-                    (click)="selectDocument(i)"
+                    [class.fd-document-item--active]="i === selectedPageIndex"
+                    (click)="selectPage(i)"
                   >
-                    <span class="fd-document-title">{{ doc.title }}</span>
-                    <span class="fd-document-meta">Erfasst am {{ doc.capturedAt }}</span>
-                    <span class="fd-document-meta">Status: {{ doc.status }}</span>
+                    <span class="fd-document-title">Seite {{ page.pageNo }}</span>
+                    <span class="fd-document-meta">Status: {{ page.status }}</span>
+                    <span class="fd-document-meta">ID: {{ page.pageId }}</span>
                   </button>
                 </li>
               }
             </ul>
           } @else {
-            <p>Noch keine Dokumente verfügbar.</p>
+            <p>Noch keine Seiten verfügbar.</p>
           }
         </section>
       </div>
@@ -62,10 +62,9 @@
 
     <main drv-col [sm]="4" [md]="12" [lg]="10" class="fd-content" id="main-content">
       <section class="fd-section">
-        <h1>Prüfung von Dokumentenstapel und extrahierten Daten</h1>
+        <h1>Prüfungsergebnisse</h1>
         <p>
-          Vergleichen Sie links den Dokumentenstapel mit den rechts extrahierten Angaben. Die Werte auf der rechten Seite
-          sind standardmäßig bearbeitbar.
+          Hier werden die Ergebnisse aus dem Workflow angezeigt..
         </p>
         <drv-status bgColor="ui-05">{{ progressText }}</drv-status>
         @if (apiError) {
@@ -76,63 +75,40 @@
       <section class="fd-section">
         <div class="fd-compare-grid">
           <article class="fd-pane">
-            <h2>Dokumentenansicht</h2>
-            @if (selectedDocument; as doc) {
+            <h2>Ausgewählte Seite</h2>
+            @if (selectedPage; as page) {
               <div class="fd-document-preview">
-                <h3>Ausgewähltes Dokument</h3>
-                <p><strong>ID:</strong> {{ doc.id }}</p>
-                <p><strong>Titel:</strong> {{ doc.title }}</p>
-                <p><strong>Zusammenfassung:</strong> {{ doc.summary }}</p>
-                <p><strong>Datum der Erfassung:</strong> {{ doc.capturedAt }}</p>
-                <p><strong>Status:</strong> {{ doc.status }}</p>
+                <p><strong>Seite:</strong> {{ page.pageNo }}</p>
+                <p><strong>Status:</strong> {{ page.status }}</p>
+                <p><strong>Page-ID:</strong> {{ page.pageId }}</p>
+                @if (page.errorMessage) {
+                  <p class="fd-error"><strong>Fehler:</strong> {{ page.errorMessage }}</p>
+                }
               </div>
-
-              @if (selectedDocumentPreviewUrl) {
-                <div class="fd-preview-frame">
-                  <iframe
-                    [src]="selectedDocumentPreviewUrl"
-                    title="Dokumentvorschau"
-                    loading="lazy"
-                  ></iframe>
-                </div>
-              } @else {
-                <p>Für dieses Dokument ist aktuell keine Vorschau verfügbar.</p>
-              }
             } @else {
-              <p>Die Verarbeitung läuft. Sobald Daten vorliegen, werden die Dokumente hier angezeigt.</p>
+              <p>Die Verarbeitung läuft. Sobald Seiten vorliegen, erscheinen sie hier.</p>
             }
           </article>
 
           <article class="fd-pane">
-            <h2>Extrahierte Daten</h2>
+            <h2>Extrahierte Inhalte</h2>
+            @if (selectedPage; as page) {
+              @if (page.hasExtract) {
+                <section class="fd-kv-section">
+                  <h3>Markdown</h3>
+                  <pre class="fd-code-block">{{ page.markdown }}</pre>
+                </section>
 
-            <section class="fd-kv-section">
-              <h3>Dokumentdaten</h3>
-              @if (selectedDocumentExtractFields.length > 0) {
-                @for (field of selectedDocumentExtractFields; track field.key; let i = $index) {
-                  <div class="fd-kv-row">
-                    <label class="fd-kv-key" [for]="'doc-field-' + i">{{ field.key }}</label>
-                    <input class="fd-kv-value" [id]="'doc-field-' + i" [name]="'doc-field-' + i" [(ngModel)]="field.value" />
-                  </div>
-                }
+                <section class="fd-kv-section">
+                  <h3>Docling JSON</h3>
+                  <pre class="fd-code-block">{{ page.doclingJson }}</pre>
+                </section>
               } @else {
-                <p>Noch keine extrahierten Dokumentdaten vorhanden.</p>
+                <p>Für diese Seite liegt noch kein Extrakt vor.</p>
               }
-            </section>
-
-            <section class="fd-kv-section">
-              <h3>Stammsatz Versicherter</h3>
-              @if (selectedInsuredMasterDataFields.length > 0) {
-                @for (field of selectedInsuredMasterDataFields; track field.key; let i = $index) {
-                  <div class="fd-kv-row">
-                    <label class="fd-kv-key" [for]="'master-field-' + i">{{ field.key }}</label>
-                    <input class="fd-kv-value" [id]="'master-field-' + i" [name]="'master-field-' + i" [(ngModel)]="field.value" />
-                  </div>
-                }
-              } @else {
-                <p>Noch keine Stammdaten vorhanden.</p>
-              }
-            </section>
+            } @else {
+              <p>Es ist noch keine Seite ausgewählt.</p>
+            }
           </article>
         </div>
       </section>
@@ -141,6 +117,12 @@
         <drv-buttonbar placing="space-between" layoutMobile="block" [wrap]="true">
           <drv-button label="Zurück zu Hochladen" kind="secondary" (buttonClick)="backToUpload()"></drv-button>
           <drv-button
+            [label]="isLlmStarting ? 'LLM-Verarbeitung startet ...' : 'LLM-Verarbeitung starten'"
+            kind="secondary"
+            [disabled]="!canStartLlm"
+            (buttonClick)="startLlmProcessing()"
+          ></drv-button>
+          <drv-button
             label="Weiter zu Zusammenfassung"
             kind="primary"
             [disabled]="!canGoToSummary"
@@ -148,8 +130,12 @@
           ></drv-button>
         </drv-buttonbar>
 
-        @if (continueError) {
-          <p class="fd-error" role="alert">{{ continueError }}</p>
+        @if (llmSuccess) {
+          <p class="fd-success" role="status">{{ llmSuccess }}</p>
+        }
+
+        @if (llmError) {
+          <p class="fd-error" role="alert">{{ llmError }}</p>
         }
       </section>
     </main>

@@ -1,19 +1,16 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { OpenApiClientService } from '../api/openapi-client.service';
-import { ProcessProgress, ResultResponse, SubDocument } from '../api/api.models';
+import { ApiService } from '../api/api/api.service';
+import { PageExtractResponse, PageInfo, VorgangWorkflowStatusResponse } from '../api/model/models';
 
-type ProcessJobState = 'running' | 'completed' | 'error';
-
-type ProcessJob = {
-  processId: string;
-  previewId?: string;
-  fileName: string;
-  progress: number;
-  status: ProcessJobState;
-  errorMessage?: string;
-  previewDataUrl?: string;
-  result?: ResultResponse;
+type WorkflowPageResult = {
+  pageId: string;
+  pageNo: number;
+  status: string;
+  errorMessage: string;
+  markdown: string;
+  doclingJson: string;
+  extractLoaded: boolean;
 };
 
 type StapleFlowState = {
@@ -21,23 +18,19 @@ type StapleFlowState = {
   processingCompleted: boolean;
   caseNumber: string;
   capturedAt: string;
-  jobs: ProcessJob[];
+  insuranceNumber: string;
+  vorgangId: string;
+  stapelId: string;
+  workflowStatus: string;
+  pagesTotal: number;
+  pagesDone: number;
+  pagesFailed: number;
+  llmTriggered: boolean;
+  pages: WorkflowPageResult[];
 };
 
-export type KeyValueField = {
-  key: string;
-  value: string;
-};
-
-export type DisplayDocument = {
-  id: string;
-  title: string;
-  summary: string;
-  capturedAt: string;
-  status: 'Neu' | 'Geprüft';
-  previewDataUrl: string;
-  documentExtractFields: KeyValueField[];
-  insuredMasterDataFields: KeyValueField[];
+export type WorkflowPageDisplay = WorkflowPageResult & {
+  hasExtract: boolean;
 };
 
 const DEFAULT_STATE: StapleFlowState = {
@@ -45,14 +38,22 @@ const DEFAULT_STATE: StapleFlowState = {
   processingCompleted: false,
   caseNumber: '',
   capturedAt: '',
-  jobs: [],
+  insuranceNumber: '',
+  vorgangId: '',
+  stapelId: '',
+  workflowStatus: '',
+  pagesTotal: 0,
+  pagesDone: 0,
+  pagesFailed: 0,
+  llmTriggered: false,
+  pages: [],
 };
 
 const STORAGE_KEY = 'staple_flow_state';
 
 @Injectable({ providedIn: 'root' })
 export class StapleFlowService {
-  private readonly apiClient = inject(OpenApiClientService);
+  private readonly apiClient = inject(ApiService);
   private state: StapleFlowState = this.loadState();
 
   startFlow(): void {
@@ -65,99 +66,65 @@ export class StapleFlowService {
     this.persistState();
   }
 
-  async startServerProcessing(files: File[]): Promise<void> {
+  async startServerProcessing(files: File[], insuranceNumber: string): Promise<void> {
     if (files.length === 0) {
       throw new Error('Es wurde keine Datei ausgewählt.');
     }
 
-    const processStarts = await Promise.all(
-      files.map(async (file) => {
-        const [startResponse, previewStartResponse] = await Promise.all([
-          firstValueFrom(this.apiClient.start(file)),
-          firstValueFrom(this.apiClient.startPreview(file)),
-        ]);
-        return {
-          processId: startResponse.id,
-          previewId: previewStartResponse.id,
-          fileName: file.name,
-          progress: 0,
-          status: 'running' as ProcessJobState,
-        };
-      }),
+    const file = files[0];
+    const now = new Date();
+    const trimmedInsuranceNumber = insuranceNumber.trim();
+    const stapelName = trimmedInsuranceNumber ? `VSNR-${trimmedInsuranceNumber}` : file.name;
+    const createResponse = await firstValueFrom(
+      this.apiClient.createVorgangWithUpload(trimmedInsuranceNumber, file, true, stapelName),
     );
 
-    const now = new Date();
     this.state.uploadCompleted = true;
     this.state.processingCompleted = false;
-    this.state.jobs = processStarts;
     this.state.caseNumber = this.generateCaseNumber(now);
     this.state.capturedAt = this.formatDate(now);
+    this.state.insuranceNumber = trimmedInsuranceNumber;
+    this.state.vorgangId = createResponse.vorgangId;
+    this.state.stapelId = createResponse.stapelId;
+    this.state.workflowStatus = '';
+    this.state.pagesTotal = 0;
+    this.state.pagesDone = 0;
+    this.state.pagesFailed = 0;
+    this.state.llmTriggered = false;
+    this.state.pages = [];
     this.persistState();
   }
 
   async refreshResults(): Promise<void> {
-    if (this.state.jobs.length === 0) {
+    if (!this.state.vorgangId || !this.state.stapelId) {
       return;
     }
 
-    const updates = await Promise.all(
-      this.state.jobs.map(async (job) => {
-        if (job.status === 'completed') {
-          if (!job.previewDataUrl && job.previewId) {
-            const previewDataUrl = await this.tryLoadPreview(job.previewId);
-            if (previewDataUrl) {
-              return { ...job, previewDataUrl };
-            }
-          }
-          return job;
-        }
+    const workflow = await firstValueFrom(this.apiClient.getVorgangWorkflowStatus(this.state.vorgangId));
+    const pages = await firstValueFrom(this.apiClient.getDokumentenstapelPages(this.state.stapelId));
+    const sortedPages = [...pages].sort((a, b) => a.pageNo - b.pageNo);
 
-        try {
-          const response = await firstValueFrom(this.apiClient.getResult(job.processId));
-          if (response.status === 202) {
-            const progressBody = response.body as ProcessProgress;
-            return {
-              ...job,
-              status: 'running' as ProcessJobState,
-              progress: Math.max(0, Math.min(100, Number(progressBody.progress ?? 0))),
-            };
-          }
-
-          if (response.status === 200) {
-            const resultBody = response.body as ResultResponse;
-            const previewDataUrl = job.previewId ? await this.tryLoadPreview(job.previewId) : undefined;
-            return {
-              ...job,
-              status: 'completed' as ProcessJobState,
-              progress: 100,
-              previewDataUrl,
-              result: resultBody,
-            };
-          }
-
-          return {
-            ...job,
-            status: 'error' as ProcessJobState,
-            errorMessage: `Unerwarteter HTTP-Status: ${response.status}`,
-          };
-        } catch {
-          return {
-            ...job,
-            status: 'error' as ProcessJobState,
-            errorMessage: 'Ergebnis konnte nicht geladen werden.',
-          };
-        }
-      }),
+    const pagesWithExtracts = await Promise.all(
+      sortedPages.map((page) => this.loadPageResult(page)),
     );
 
-    this.state.jobs = updates;
-    this.state.processingCompleted = updates.length > 0 && updates.every((job) => job.status === 'completed');
+    this.state.workflowStatus = workflow.status;
+    this.state.pagesTotal = workflow.pagesTotal;
+    this.state.pagesDone = workflow.pagesDone;
+    this.state.pagesFailed = workflow.pagesFailed;
+    this.state.pages = pagesWithExtracts;
+    this.state.processingCompleted = this.isWorkflowCompleted(workflow, pagesWithExtracts);
     this.persistState();
   }
 
-  async continueProcessing(): Promise<void> {
-    const processIds = this.state.jobs.map((job) => job.processId);
-    await Promise.all(processIds.map((id) => firstValueFrom(this.apiClient.continueProcess(id))));
+  async triggerLlmProcessing(): Promise<void> {
+    if (!this.state.stapelId) {
+      throw new Error('Es ist kein Dokumentenstapel vorhanden.');
+    }
+
+    await firstValueFrom(this.apiClient.triggerDokumentenstapelStep1(this.state.stapelId));
+    this.state.llmTriggered = true;
+    this.persistState();
   }
 
   canEnterProcess(): boolean {
@@ -166,6 +133,10 @@ export class StapleFlowService {
 
   canEnterSummary(): boolean {
     return this.state.uploadCompleted && this.state.processingCompleted;
+  }
+
+  canTriggerLlmProcessing(): boolean {
+    return this.state.uploadCompleted && Boolean(this.state.stapelId);
   }
 
   hasCompletedUpload(): boolean {
@@ -180,220 +151,133 @@ export class StapleFlowService {
     return this.state.capturedAt || this.formatDate(new Date());
   }
 
-  getJobs(): ReadonlyArray<ProcessJob> {
-    return this.state.jobs;
+  getInsuranceNumber(): string {
+    return this.state.insuranceNumber;
   }
 
-  getAverageProgress(): number {
-    if (this.state.jobs.length === 0) {
+  getWorkflowStatus(): string {
+    return this.state.workflowStatus || 'WARTET_AUF_ERGEBNISSE';
+  }
+
+  getWorkflowProgressPercent(): number {
+    if (this.state.pagesTotal <= 0) {
       return 0;
     }
-
-    const total = this.state.jobs.reduce((sum, job) => sum + job.progress, 0);
-    return Math.round(total / this.state.jobs.length);
+    return Math.round((this.state.pagesDone / this.state.pagesTotal) * 100);
   }
 
-  getDisplayDocuments(): DisplayDocument[] {
-    const documents: DisplayDocument[] = [];
-
-    for (const job of this.state.jobs) {
-      const result = job.result;
-      if (!result) {
-        continue;
-      }
-
-      const subDocuments = result.documents;
-      if (subDocuments.length === 0) {
-        documents.push(
-          this.toDisplayDocument({
-            processId: job.processId,
-            documentIndex: 0,
-            subDocument: undefined,
-            result,
-            jobStatus: job.status,
-            jobPreviewDataUrl: job.previewDataUrl,
-          }),
-        );
-        continue;
-      }
-
-      subDocuments.forEach((subDocument, index) => {
-        documents.push(
-          this.toDisplayDocument({
-            processId: job.processId,
-            documentIndex: index,
-            subDocument,
-            result,
-            jobStatus: job.status,
-            jobPreviewDataUrl: job.previewDataUrl,
-          }),
-        );
-      });
-    }
-
-    return documents;
-  }
-
-  getSummaryRows(): string[][] {
-    const jobs = this.state.jobs;
-    const completedCount = jobs.filter((job) => job.status === 'completed').length;
-    const errorCount = jobs.filter((job) => job.status === 'error').length;
-    const documentCount = this.getDisplayDocuments().length;
-
-    return [
-      ['Dokumentenupload', `${jobs.length} Datei(en)`, jobs.length > 0 ? 'Upload an API gestartet' : 'Kein Upload vorhanden'],
-      ['Prüfung', `${this.getAverageProgress()} %`, this.state.processingCompleted ? 'Abgeschlossen' : 'Läuft oder ausstehend'],
-      ['Ergebnisse', `${documentCount} Dokument(e)`, documentCount > 0 ? 'Extrahierte Daten verfügbar' : 'Noch keine Daten'],
-      ['Fehler', `${errorCount}`, errorCount > 0 ? 'Bitte API-Protokoll prüfen' : 'Keine Fehler gemeldet'],
-      ['Abgeschlossene Vorgänge', `${completedCount}/${jobs.length || 0}`, 'Status je Dokumentenstapel'],
-    ];
-  }
-
-  private toDisplayDocument(args: {
-    processId: string;
-    documentIndex: number;
-    subDocument?: SubDocument;
-    result: ResultResponse;
-    jobStatus: ProcessJobState;
-    jobPreviewDataUrl?: string;
-  }): DisplayDocument {
-    const { processId, documentIndex, subDocument, result, jobStatus, jobPreviewDataUrl } = args;
-    const additionalFields = this.toKeyValueFields(subDocument?.additionalFields);
-    const category = subDocument?.category ?? 'SONSTIGE';
-    const title = this.translateCategory(category);
-    const summary = subDocument?.summary ?? result.summary ?? 'Keine Zusammenfassung vorhanden.';
-    const previewDataUrl =
-      this.toPdfDataUrl(subDocument?.documentData) || jobPreviewDataUrl || this.findPreviewDataUrl(result) || '';
-
-    return {
-      id: `${processId}-${documentIndex + 1}`,
-      title,
-      summary,
-      capturedAt: this.getCapturedAt(),
-      status: jobStatus === 'completed' ? 'Geprüft' : 'Neu',
-      previewDataUrl,
-      documentExtractFields: [
-        { key: 'Titel', value: title },
-        { key: 'Kategorie', value: category },
-        { key: 'Zusammenfassung', value: summary },
-        { key: 'Datum der Erfassung', value: this.getCapturedAt() },
-        { key: 'Dokument-ID', value: `${processId}-${documentIndex + 1}` },
-        ...additionalFields,
-      ],
-      insuredMasterDataFields: [
-        { key: 'Versicherungsnummer', value: String(subDocument?.vsnr ?? result.vsnr ?? '') },
-        { key: 'Versicherungsnummer verstorbener Versicherter', value: '' },
-        { key: 'Familienname', value: subDocument?.surname ?? result.surname ?? '' },
-        { key: 'Vorname', value: subDocument?.firstName ?? result.firstName ?? '' },
-        { key: 'Geburtsname', value: '' },
-        { key: 'Geburtsort', value: '' },
-        { key: 'Geburtsland', value: '' },
-        { key: 'Staatsangehörigkeit', value: '' },
-        { key: 'Sterbedatum', value: '' },
-        { key: 'Anschrift', value: '' },
-        { key: 'Betriebsnummer des Arbeitgebers', value: '' },
-        { key: 'Tag der Beschäftigungsaufnahme', value: this.formatOptionalDate(subDocument?.birthDate ?? result.birthDate) },
-      ],
-    };
-  }
-
-  private toPdfDataUrl(base64Pdf?: string): string {
-    if (!base64Pdf) {
-      return '';
-    }
-    return `data:application/pdf;base64,${base64Pdf}#toolbar=0&navpanes=0&scrollbar=1&view=FitH`;
-  }
-
-  private findPreviewDataUrl(result: ResultResponse): string {
-    const fromDocuments = result.documents
-      .map((document) => this.toPdfDataUrl(document.documentData))
-      .find((value) => Boolean(value));
-    return fromDocuments ?? '';
-  }
-
-  private async tryLoadPreview(previewId: string): Promise<string | undefined> {
-    try {
-      const previewResponse = await firstValueFrom(this.apiClient.getPreview(previewId));
-      const base64Value = this.findBase64Pdf(previewResponse);
-      if (!base64Value) {
-        return undefined;
-      }
-      return this.toPdfDataUrl(base64Value) || undefined;
-    } catch {
-      return undefined;
-    }
-  }
-
-  private findBase64Pdf(value: unknown): string | undefined {
-    if (typeof value === 'string') {
-      const normalized = value.trim();
-      if (normalized.length > 50 && !normalized.startsWith('{') && !normalized.startsWith('[')) {
-        return normalized;
-      }
-      return undefined;
-    }
-
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        const nested = this.findBase64Pdf(item);
-        if (nested) {
-          return nested;
-        }
-      }
-      return undefined;
-    }
-
-    if (value && typeof value === 'object') {
-      const map = value as Record<string, unknown>;
-      const directKeys = ['documentData', 'pdf', 'preview', 'data', 'content'];
-      for (const key of directKeys) {
-        const candidate = this.findBase64Pdf(map[key]);
-        if (candidate) {
-          return candidate;
-        }
-      }
-      for (const nestedValue of Object.values(map)) {
-        const nested = this.findBase64Pdf(nestedValue);
-        if (nested) {
-          return nested;
-        }
-      }
-    }
-
-    return undefined;
-  }
-
-  private toKeyValueFields(values?: Record<string, unknown>): KeyValueField[] {
-    if (!values) {
-      return [];
-    }
-
-    return Object.entries(values).map(([key, value]) => ({
-      key: this.toGermanLabel(key),
-      value: String(value ?? ''),
+  getPageResults(): WorkflowPageDisplay[] {
+    return this.state.pages.map((page) => ({
+      ...page,
+      hasExtract: Boolean(page.markdown || page.doclingJson),
     }));
   }
 
-  private toGermanLabel(key: string): string {
-    const mapping: Record<string, string> = {
-      customerNumber: 'Kundennummer',
-      caseNumber: 'Aktenzeichen',
-      dateOfReceipt: 'Eingangsdatum',
-    };
-    return mapping[key] ?? key;
+  getSummaryRows(): string[][] {
+    const pageResults = this.getPageResults();
+    const extractedCount = pageResults.filter((page) => page.hasExtract).length;
+    const errorCount = pageResults.filter((page) => Boolean(page.errorMessage)).length;
+
+    return [
+      ['Dokumentenupload', this.state.uploadCompleted ? 'Abgeschlossen' : 'Offen', this.state.vorgangId || 'Noch kein Vorgang angelegt'],
+      ['Workflow-Status', this.getWorkflowStatus(), `Fortschritt: ${this.getWorkflowProgressPercent()} %`],
+      ['Seiten verarbeitet', `${this.state.pagesDone}/${this.state.pagesTotal}`, `${this.state.pagesFailed} fehlgeschlagen`],
+      ['Extrakte geladen', `${extractedCount}/${pageResults.length}`, extractedCount > 0 ? 'Prüfungsergebnisse verfügbar' : 'Noch keine Extrakte'],
+      ['LLM-Verarbeitung', this.state.llmTriggered ? 'Gestartet' : 'Nicht gestartet', this.state.stapelId || 'Keine Stapel-ID'],
+      ['Fehler', `${errorCount}`, errorCount > 0 ? 'Einzelne Seiten konnten nicht extrahiert werden' : 'Keine Fehler gemeldet'],
+    ];
   }
 
-  private translateCategory(category: string): string {
-    const categories: Record<string, string> = {
-      AUSWEIS: 'Ausweis',
-      GEBURTSURKUNDE: 'Geburtsurkunde',
-      STERBEURKUNDE: 'Sterbeurkunde',
-      ZEUGNIS: 'Zeugnis',
-      STEUERBESCHEID: 'Steuerbescheid',
-      KRANKENKASSENBESCHEINIGUNG: 'Krankenkassenbescheinigung',
-      SONSTIGE: 'Sonstige Unterlagen',
-    };
-    return categories[category] ?? 'Dokument';
+  private async loadPageResult(page: PageInfo): Promise<WorkflowPageResult> {
+    if (!this.shouldLoadExtract(page.status)) {
+      return {
+        pageId: page.pageId,
+        pageNo: page.pageNo,
+        status: page.status,
+        errorMessage: this.readNullableString(page.errorMessage),
+        markdown: '',
+        doclingJson: '',
+        extractLoaded: false,
+      };
+    }
+
+    try {
+      const extract = await firstValueFrom(this.apiClient.getPageExtract(page.pageId));
+      return {
+        pageId: page.pageId,
+        pageNo: page.pageNo,
+        status: page.status,
+        errorMessage: this.readNullableString(page.errorMessage),
+        markdown: extract.markdown,
+        doclingJson: this.stringifyDoclingJson(extract),
+        extractLoaded: true,
+      };
+    } catch {
+      return {
+        pageId: page.pageId,
+        pageNo: page.pageNo,
+        status: page.status,
+        errorMessage: this.readNullableString(page.errorMessage) || 'Extrakt konnte noch nicht geladen werden.',
+        markdown: '',
+        doclingJson: '',
+        extractLoaded: false,
+      };
+    }
+  }
+
+  private shouldLoadExtract(status: string): boolean {
+    const normalized = status.toUpperCase();
+    return normalized.includes('DONE')
+      || normalized.includes('EXTRACT')
+      || normalized.includes('READY')
+      || normalized.includes('SUCCESS');
+  }
+
+  private stringifyDoclingJson(extract: PageExtractResponse): string {
+    try {
+      return JSON.stringify(extract.doclingJson, null, 2);
+    } catch {
+      return '';
+    }
+  }
+
+  private readNullableString(value: unknown): string {
+    if (!value) {
+      return '';
+    }
+
+    if (typeof value === 'string') {
+      return value;
+    }
+
+    if (typeof value === 'object') {
+      const record = value as Record<string, unknown>;
+      const possibleValue = record['value'];
+      if (typeof possibleValue === 'string') {
+        return possibleValue;
+      }
+    }
+
+    return '';
+  }
+
+  private isWorkflowCompleted(workflow: VorgangWorkflowStatusResponse, pages: WorkflowPageResult[]): boolean {
+    if (workflow.pagesTotal > 0 && workflow.pagesDone + workflow.pagesFailed >= workflow.pagesTotal) {
+      return true;
+    }
+
+    const normalizedWorkflowStatus = workflow.status.toUpperCase();
+    if (
+      normalizedWorkflowStatus.includes('DONE')
+      || normalizedWorkflowStatus.includes('COMPLETED')
+      || normalizedWorkflowStatus.includes('FINISHED')
+      || normalizedWorkflowStatus.includes('SUCCESS')
+    ) {
+      return true;
+    }
+
+    return pages.length > 0
+      && pages.every((page) => page.extractLoaded || Boolean(page.errorMessage));
   }
 
   private loadState(): StapleFlowState {
@@ -413,7 +297,15 @@ export class StapleFlowService {
         processingCompleted: Boolean(parsed.processingCompleted),
         caseNumber: parsed.caseNumber ?? '',
         capturedAt: parsed.capturedAt ?? '',
-        jobs: Array.isArray(parsed.jobs) ? parsed.jobs : [],
+        insuranceNumber: parsed.insuranceNumber ?? '',
+        vorgangId: parsed.vorgangId ?? '',
+        stapelId: parsed.stapelId ?? '',
+        workflowStatus: parsed.workflowStatus ?? '',
+        pagesTotal: Number(parsed.pagesTotal ?? 0),
+        pagesDone: Number(parsed.pagesDone ?? 0),
+        pagesFailed: Number(parsed.pagesFailed ?? 0),
+        llmTriggered: Boolean(parsed.llmTriggered),
+        pages: Array.isArray(parsed.pages) ? parsed.pages : [],
       };
     } catch {
       return { ...DEFAULT_STATE };
@@ -436,17 +328,5 @@ export class StapleFlowService {
 
   private formatDate(date: Date): string {
     return new Intl.DateTimeFormat('de-DE').format(date);
-  }
-
-  private formatOptionalDate(raw?: string): string {
-    if (!raw) {
-      return '';
-    }
-
-    const parsed = new Date(raw);
-    if (Number.isNaN(parsed.getTime())) {
-      return raw;
-    }
-    return this.formatDate(parsed);
   }
 }

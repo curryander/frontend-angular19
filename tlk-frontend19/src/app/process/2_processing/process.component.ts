@@ -1,6 +1,4 @@
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import {
   ApplicationHeaderComponent,
@@ -13,7 +11,7 @@ import {
   RowDirective,
   StatusComponent,
 } from '@drv-ds/drv-design-system-ng';
-import { DisplayDocument, KeyValueField, StapleFlowService } from '../staple-flow.service';
+import { StapleFlowService, WorkflowPageDisplay } from '../staple-flow.service';
 
 @Component({
   selector: 'app-process',
@@ -22,7 +20,6 @@ import { DisplayDocument, KeyValueField, StapleFlowService } from '../staple-flo
     ButtonComponent,
     ButtonbarComponent,
     ColDirective,
-    FormsModule,
     GridDirective,
     ProgressnavComponent,
     ProgressnavNodeComponent,
@@ -36,58 +33,43 @@ import { DisplayDocument, KeyValueField, StapleFlowService } from '../staple-flo
 export class ProcessComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly flowService = inject(StapleFlowService);
-  private readonly sanitizer = inject(DomSanitizer);
   private pollHandle: ReturnType<typeof setInterval> | null = null;
 
-  documents: DisplayDocument[] = [];
-  selectedDocumentIndex = 0;
+  pages: WorkflowPageDisplay[] = [];
+  selectedPageIndex = 0;
   isRefreshing = false;
+  isLlmStarting = false;
   apiError = '';
-  continueError = '';
+  llmError = '';
+  llmSuccess = '';
 
   get headerTitle(): string {
     return `Prüfung · Vorgang ${this.flowService.getCaseNumber()} · Erfasst am ${this.flowService.getCapturedAt()}`;
   }
 
-  get selectedDocument(): DisplayDocument | null {
-    return this.documents[this.selectedDocumentIndex] ?? null;
+  get hasPages(): boolean {
+    return this.pages.length > 0;
   }
 
-  get selectedDocumentPreviewUrl(): SafeResourceUrl | null {
-    const selected = this.selectedDocument;
-    if (!selected?.previewDataUrl) {
-      return null;
-    }
-    return this.sanitizer.bypassSecurityTrustResourceUrl(selected.previewDataUrl);
-  }
-
-  get selectedDocumentExtractFields(): KeyValueField[] {
-    return this.selectedDocument?.documentExtractFields ?? [];
-  }
-
-  get selectedInsuredMasterDataFields(): KeyValueField[] {
-    return this.selectedDocument?.insuredMasterDataFields ?? [];
-  }
-
-  get hasDocuments(): boolean {
-    return this.documents.length > 0;
+  get selectedPage(): WorkflowPageDisplay | null {
+    return this.pages[this.selectedPageIndex] ?? null;
   }
 
   get progressText(): string {
-    const jobs = this.flowService.getJobs();
-    if (jobs.length === 0) {
-      return 'Noch keine Verarbeitung gestartet.';
+    const status = this.flowService.getWorkflowStatus();
+    const progress = this.flowService.getWorkflowProgressPercent();
+    if (!this.hasPages && progress === 0) {
+      return 'Verarbeitung wurde gestartet. Ergebnisse werden geladen.';
     }
-
-    if (this.flowService.canEnterSummary()) {
-      return 'Verarbeitung abgeschlossen. Die Ergebnisse sind verfügbar.';
-    }
-
-    return `Verarbeitung läuft: ${this.flowService.getAverageProgress()} %`;
+    return `Workflow-Status: ${status} (${progress} %)`;
   }
 
   get canGoToSummary(): boolean {
     return this.flowService.canEnterSummary();
+  }
+
+  get canStartLlm(): boolean {
+    return this.flowService.canTriggerLlmProcessing() && !this.isLlmStarting;
   }
 
   async ngOnInit(): Promise<void> {
@@ -99,8 +81,8 @@ export class ProcessComponent implements OnInit, OnDestroy {
     this.stopPolling();
   }
 
-  selectDocument(index: number): void {
-    this.selectedDocumentIndex = index;
+  selectPage(index: number): void {
+    this.selectedPageIndex = index;
   }
 
   cancelFlow(): void {
@@ -112,18 +94,29 @@ export class ProcessComponent implements OnInit, OnDestroy {
     void this.router.navigate(['/upload']);
   }
 
-  async goToSummary(): Promise<void> {
-    this.continueError = '';
+  goToSummary(): void {
     if (!this.canGoToSummary) {
-      this.continueError = 'Die Verarbeitung ist noch nicht abgeschlossen.';
+      return;
+    }
+    void this.router.navigate(['/summary']);
+  }
+
+  async startLlmProcessing(): Promise<void> {
+    if (!this.canStartLlm) {
       return;
     }
 
+    this.isLlmStarting = true;
+    this.llmError = '';
+    this.llmSuccess = '';
     try {
-      await this.flowService.continueProcessing();
-      void this.router.navigate(['/summary']);
+      await this.flowService.triggerLlmProcessing();
+      this.llmSuccess = 'LLM-Verarbeitung wurde gestartet.';
+      await this.refreshProcessState();
     } catch {
-      this.continueError = 'Weiterverarbeitung durch den Server fehlgeschlagen.';
+      this.llmError = 'LLM-Verarbeitung konnte nicht gestartet werden.';
+    } finally {
+      this.isLlmStarting = false;
     }
   }
 
@@ -154,9 +147,9 @@ export class ProcessComponent implements OnInit, OnDestroy {
     this.apiError = '';
     try {
       await this.flowService.refreshResults();
-      this.documents = this.flowService.getDisplayDocuments();
-      if (this.selectedDocumentIndex >= this.documents.length) {
-        this.selectedDocumentIndex = Math.max(this.documents.length - 1, 0);
+      this.pages = this.flowService.getPageResults();
+      if (this.selectedPageIndex >= this.pages.length) {
+        this.selectedPageIndex = Math.max(this.pages.length - 1, 0);
       }
     } catch {
       this.apiError = 'Ergebnisse konnten nicht vom Server geladen werden.';

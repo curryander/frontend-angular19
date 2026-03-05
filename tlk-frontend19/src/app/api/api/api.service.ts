@@ -47,6 +47,7 @@ export class ApiService extends BaseService {
      * Legt einen neuen Vorgang mit Dokumentenstapel an
      * Erstellt Vorgang plus Dokumentenstapel und speichert das hochgeladene PDF. Optional wird Step1 asynchron gestartet.
      * @endpoint post /api/v1/vorgaenge
+     * @param vsnr 
      * @param file 
      * @param startProcessing Wenn true, startet Step1 direkt asynchron.
      * @param stapelName 
@@ -54,15 +55,27 @@ export class ApiService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public createVorgangWithUpload(file: Blob, startProcessing?: boolean, stapelName?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CreateVorgangResponse>;
-    public createVorgangWithUpload(file: Blob, startProcessing?: boolean, stapelName?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CreateVorgangResponse>>;
-    public createVorgangWithUpload(file: Blob, startProcessing?: boolean, stapelName?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CreateVorgangResponse>>;
-    public createVorgangWithUpload(file: Blob, startProcessing?: boolean, stapelName?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public createVorgangWithUpload(vsnr: string, file: Blob, startProcessing?: boolean, stapelName?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CreateVorgangResponse>;
+    public createVorgangWithUpload(vsnr: string, file: Blob, startProcessing?: boolean, stapelName?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CreateVorgangResponse>>;
+    public createVorgangWithUpload(vsnr: string, file: Blob, startProcessing?: boolean, stapelName?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CreateVorgangResponse>>;
+    public createVorgangWithUpload(vsnr: string, file: Blob, startProcessing?: boolean, stapelName?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (vsnr === null || vsnr === undefined) {
+            throw new Error('Required parameter vsnr was null or undefined when calling createVorgangWithUpload.');
+        }
         if (file === null || file === undefined) {
             throw new Error('Required parameter file was null or undefined when calling createVorgangWithUpload.');
         }
 
         let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'vsnr',
+            <any>vsnr,
+            QueryParamStyle.Form,
+            true,
+        );
+
 
         localVarQueryParameters = this.addToHttpParams(
             localVarQueryParameters,

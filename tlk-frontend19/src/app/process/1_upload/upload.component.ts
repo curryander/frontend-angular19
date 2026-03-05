@@ -45,7 +45,6 @@ export class UploadComponent {
   private readonly flowService = inject(StapleFlowService);
   private readonly maxTotalFileSizeBytes = 1024 * 1024 * 1024;
   private readonly maxDocumentCount = 1;
-  private readonly insuranceNumberPattern = /^\d{2}\s(0[1-9]|[12]\d|3[01])(0[1-9]|1[0-2])\d{2}\s[A-Za-z]\s\d{3}$/;
 
   selectedFiles: FileList | null = null;
   insuranceNumber = '';
@@ -74,7 +73,7 @@ export class UploadComponent {
 
     this.isStartingProcessing = true;
     try {
-      await this.flowService.startServerProcessing(this.selectedFileList);
+      await this.flowService.startServerProcessing(this.selectedFileList, this.insuranceNumber);
       void this.router.navigate(['/process']);
     } catch {
       this.startError = 'Die Verarbeitung konnte nicht gestartet werden. Bitte versuchen Sie es erneut.';
@@ -120,11 +119,11 @@ export class UploadComponent {
     if (!this.hasInteractedWithRequiredFields || this.uploadError || this.canContinue) {
       return '';
     }
-    return 'Bitte geben Sie eine gültige Versicherungsnummer an, wählen Sie genau eine PDF-Datei aus und bestätigen Sie die Erklärung.';
+    return 'Bitte geben Sie eine Versicherungsnummer an, wählen Sie genau eine PDF-Datei aus und bestätigen Sie die Erklärung.';
   }
 
   get isInsuranceNumberValid(): boolean {
-    return this.insuranceNumberPattern.test(this.insuranceNumber.trim());
+    return this.insuranceNumber.trim().length > 0;
   }
 
   get selectedFileList(): File[] {

@@ -1,4 +1,4 @@
-﻿<drv-applicationheader
+<drv-applicationheader
   triggerButtonLabel="Navigation anzeigen"
   appTitle="Hochladen"
   [fullWidth]="true"
@@ -54,7 +54,6 @@
           [ngModel]="insuranceNumber"
           (ngModelChange)="onInsuranceNumberChange($event)"
         ></drv-textinput>
-        <p class="fd-help-text">Format: 12 150890 M 123 (3-8 = Geburtsdatum TTMMJJ, 9 = Anfangsbuchstabe Geburtsname)</p>
         <div class="fd-vsnr-examples" aria-label="Beispiel Versicherungsnummern">
           <p>Beispielnummern zum Testen:</p>
           <ul>
@@ -65,9 +64,9 @@
             <li><code>99 070777 K 222</code></li>
           </ul>
         </div>
-        @if (hasInteractedWithRequiredFields && insuranceNumber.trim() && !isInsuranceNumberValid) {
+        @if (hasInteractedWithRequiredFields && !isInsuranceNumberValid) {
           <p class="fd-error" role="alert">
-            Die Versicherungsnummer ist ungültig. Erwartetes Format: 12 150890 M 123.
+            Bitte geben Sie eine Versicherungsnummer ein.
           </p>
         }
 
@@ -129,7 +128,7 @@
         <drv-buttonbar placing="space-between" layoutMobile="block" [wrap]="true">
           <drv-button label="Zurück zu Dokumentenstapel" kind="secondary" (buttonClick)="cancelFlow()"></drv-button>
           <drv-button
-            [label]="isStartingProcessing ? 'Verarbeitung startet ...' : 'Verarbeitung starten'"
+            [label]="isStartingProcessing ? 'Dokumentenstapel wird hochgeladen ...' : 'Dokumentenstapel hochladen'"
             kind="primary"
             [disabled]="!canContinue"
             (buttonClick)="goToProcess()"

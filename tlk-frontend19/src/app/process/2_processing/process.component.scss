@@ -135,6 +135,20 @@
   margin-top: 1rem;
 }
 
+.fd-code-block {
+  margin: 0;
+  max-height: 20rem;
+  overflow: auto;
+  padding: 0.75rem;
+  border: 0.0625rem solid var(--drv-color-ui-04, #b4c1d0);
+  border-radius: 0.375rem;
+  background-color: #f6f8fa;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .fd-kv-row {
   display: grid;
   grid-template-columns: minmax(0, 14rem) minmax(0, 1fr);
@@ -163,6 +177,12 @@
 .fd-error {
   margin: 0;
   color: #b00020;
+  font-weight: 600;
+}
+
+.fd-success {
+  margin: 0;
+  color: #1e6f2e;
   font-weight: 600;
 }
 

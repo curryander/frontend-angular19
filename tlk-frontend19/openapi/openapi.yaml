@@ -18,6 +18,11 @@ paths:
         PDF. Optional wird Step1 asynchron gestartet.
       operationId: createVorgangWithUpload
       parameters:
+      - name: vsnr
+        in: query
+        required: true
+        schema:
+          type: string
       - name: startProcessing
         in: query
         description: "Wenn true, startet Step1 direkt asynchron."
