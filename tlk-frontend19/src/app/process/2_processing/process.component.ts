@@ -1,4 +1,4 @@
-﻿import { Component, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
@@ -13,24 +13,7 @@ import {
   RowDirective,
   StatusComponent,
 } from '@drv-ds/drv-design-system-ng';
-import { StapleFlowService } from '../staple-flow.service';
-
-type KeyValueField = {
-  key: string;
-  value: string;
-};
-
-type DocumentItem = {
-  id: string;
-  title: string;
-  summary: string;
-  capturedAt: string;
-  pages: number;
-  status: 'Neu' | 'Geprüft';
-  previewUrl: SafeResourceUrl;
-  documentExtractFields: KeyValueField[];
-  insuredMasterDataFields: KeyValueField[];
-};
+import { DisplayDocument, KeyValueField, StapleFlowService } from '../staple-flow.service';
 
 @Component({
   selector: 'app-process',
@@ -50,125 +33,70 @@ type DocumentItem = {
   standalone: true,
   styleUrl: './process.component.scss',
 })
-export class ProcessComponent {
+export class ProcessComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly flowService = inject(StapleFlowService);
   private readonly sanitizer = inject(DomSanitizer);
-  private readonly stapleCaseNumber = 'VS-2026-000471';
-  private readonly stapleCapturedAt = '03.03.2026';
+  private pollHandle: ReturnType<typeof setInterval> | null = null;
 
+  documents: DisplayDocument[] = [];
   selectedDocumentIndex = 0;
-
-  readonly documents: DocumentItem[] = [
-    {
-      id: 'doc-001',
-      title: 'Antrag Altersrente',
-      summary: 'Antragsformular mit Angaben zu Person und Versicherungsverlauf.',
-      capturedAt: '03.03.2026',
-      pages: 6,
-      status: 'Neu',
-      previewUrl: this.createPreviewUrl(
-        '/staples-of-documents/Dateien%20(20)%20von%20Michael%20Vogel_%20SZ162211325091611310/SZ162211325091611260.pdf',
-      ),
-      documentExtractFields: [
-        { key: 'Titel', value: 'Antrag Altersrente' },
-        { key: 'Zusammenfassung', value: 'Antrag mit zugehörigen Nachweisen zur Rentenprüfung.' },
-        { key: 'Datum der Erfassung', value: '03.03.2026' },
-        { key: 'Dokument-ID', value: 'doc-001' },
-      ],
-      insuredMasterDataFields: [
-        { key: 'Versicherungsnummer', value: '12 345678 M 090' },
-        { key: 'Versicherungsnummer verstorbener Versicherter', value: '' },
-        { key: 'Familienname', value: 'Muster' },
-        { key: 'Vorname', value: 'Maria' },
-        { key: 'Geburtsname', value: 'Beispiel' },
-        { key: 'Geburtsort', value: 'Berlin' },
-        { key: 'Geburtsland', value: 'Deutschland' },
-        { key: 'Staatsangehörigkeit', value: 'Deutsch' },
-        { key: 'Sterbedatum', value: '' },
-        { key: 'Anschrift', value: 'Musterstraße 7, 10115 Berlin' },
-        { key: 'Betriebsnummer des Arbeitgebers', value: '12345678' },
-        { key: 'Tag der Beschäftigungsaufnahme', value: '01.02.2020' },
-      ],
-    },
-    {
-      id: 'doc-002',
-      title: 'Geburtsurkunde',
-      summary: 'Nachweis zu Geburtsname, Geburtsort und Geburtsdatum.',
-      capturedAt: '03.03.2026',
-      pages: 1,
-      status: 'Geprüft',
-      previewUrl: this.createPreviewUrl(
-        '/staples-of-documents/Dateien%20(20)%20von%20Michael%20Vogel_%20SZ162211325091611310/SZ162211325091611270.pdf',
-      ),
-      documentExtractFields: [
-        { key: 'Titel', value: 'Geburtsurkunde' },
-        { key: 'Zusammenfassung', value: 'Nachweis zu Personenstand und Geburtsdaten.' },
-        { key: 'Datum der Erfassung', value: '03.03.2026' },
-        { key: 'Dokument-ID', value: 'doc-002' },
-      ],
-      insuredMasterDataFields: [
-        { key: 'Versicherungsnummer', value: '12 345678 M 090' },
-        { key: 'Versicherungsnummer verstorbener Versicherter', value: '' },
-        { key: 'Familienname', value: 'Muster' },
-        { key: 'Vorname', value: 'Maria' },
-        { key: 'Geburtsname', value: 'Beispiel' },
-        { key: 'Geburtsort', value: 'Leipzig' },
-        { key: 'Geburtsland', value: 'Deutschland' },
-        { key: 'Staatsangehörigkeit', value: 'Deutsch' },
-        { key: 'Sterbedatum', value: '' },
-        { key: 'Anschrift', value: 'Musterstraße 7, 10115 Berlin' },
-        { key: 'Betriebsnummer des Arbeitgebers', value: '12345678' },
-        { key: 'Tag der Beschäftigungsaufnahme', value: '01.02.2020' },
-      ],
-    },
-    {
-      id: 'doc-003',
-      title: 'Arbeitgeberbescheinigung',
-      summary: 'Nachweis zu Beschäftigungsbeginn und Betriebsnummer.',
-      capturedAt: '03.03.2026',
-      pages: 2,
-      status: 'Neu',
-      previewUrl: this.createPreviewUrl(
-        '/staples-of-documents/Dateien%20(20)%20von%20Michael%20Vogel_%20SZ162211325091611310/SZ162211325091611300.pdf',
-      ),
-      documentExtractFields: [
-        { key: 'Titel', value: 'Arbeitgeberbescheinigung' },
-        { key: 'Zusammenfassung', value: 'Bestätigung des Arbeitgebers zur Beschäftigung.' },
-        { key: 'Datum der Erfassung', value: '03.03.2026' },
-        { key: 'Dokument-ID', value: 'doc-003' },
-      ],
-      insuredMasterDataFields: [
-        { key: 'Versicherungsnummer', value: '12 345678 M 090' },
-        { key: 'Versicherungsnummer verstorbener Versicherter', value: '' },
-        { key: 'Familienname', value: 'Muster' },
-        { key: 'Vorname', value: 'Maria' },
-        { key: 'Geburtsname', value: 'Beispiel' },
-        { key: 'Geburtsort', value: 'Berlin' },
-        { key: 'Geburtsland', value: 'Deutschland' },
-        { key: 'Staatsangehörigkeit', value: 'Deutsch' },
-        { key: 'Sterbedatum', value: '' },
-        { key: 'Anschrift', value: 'Musterstraße 7, 10115 Berlin' },
-        { key: 'Betriebsnummer des Arbeitgebers', value: '87654321' },
-        { key: 'Tag der Beschäftigungsaufnahme', value: '15.05.2021' },
-      ],
-    },
-  ];
+  isRefreshing = false;
+  apiError = '';
+  continueError = '';
 
   get headerTitle(): string {
-    return `Prüfung · Vorgang ${this.stapleCaseNumber} · Erfasst am ${this.stapleCapturedAt}`;
+    return `Prüfung · Vorgang ${this.flowService.getCaseNumber()} · Erfasst am ${this.flowService.getCapturedAt()}`;
   }
 
-  get selectedDocument(): DocumentItem {
-    return this.documents[this.selectedDocumentIndex] ?? this.documents[0];
+  get selectedDocument(): DisplayDocument | null {
+    return this.documents[this.selectedDocumentIndex] ?? null;
+  }
+
+  get selectedDocumentPreviewUrl(): SafeResourceUrl | null {
+    const selected = this.selectedDocument;
+    if (!selected?.previewDataUrl) {
+      return null;
+    }
+    return this.sanitizer.bypassSecurityTrustResourceUrl(selected.previewDataUrl);
   }
 
   get selectedDocumentExtractFields(): KeyValueField[] {
-    return this.selectedDocument.documentExtractFields;
+    return this.selectedDocument?.documentExtractFields ?? [];
   }
 
   get selectedInsuredMasterDataFields(): KeyValueField[] {
-    return this.selectedDocument.insuredMasterDataFields;
+    return this.selectedDocument?.insuredMasterDataFields ?? [];
+  }
+
+  get hasDocuments(): boolean {
+    return this.documents.length > 0;
+  }
+
+  get progressText(): string {
+    const jobs = this.flowService.getJobs();
+    if (jobs.length === 0) {
+      return 'Noch keine Verarbeitung gestartet.';
+    }
+
+    if (this.flowService.canEnterSummary()) {
+      return 'Verarbeitung abgeschlossen. Die Ergebnisse sind verfügbar.';
+    }
+
+    return `Verarbeitung läuft: ${this.flowService.getAverageProgress()} %`;
+  }
+
+  get canGoToSummary(): boolean {
+    return this.flowService.canEnterSummary();
+  }
+
+  async ngOnInit(): Promise<void> {
+    await this.refreshProcessState();
+    this.startPolling();
+  }
+
+  ngOnDestroy(): void {
+    this.stopPolling();
   }
 
   selectDocument(index: number): void {
@@ -184,14 +112,56 @@ export class ProcessComponent {
     void this.router.navigate(['/upload']);
   }
 
-  goToSummary(): void {
-    this.flowService.completeProcessing();
-    void this.router.navigate(['/summary']);
+  async goToSummary(): Promise<void> {
+    this.continueError = '';
+    if (!this.canGoToSummary) {
+      this.continueError = 'Die Verarbeitung ist noch nicht abgeschlossen.';
+      return;
+    }
+
+    try {
+      await this.flowService.continueProcessing();
+      void this.router.navigate(['/summary']);
+    } catch {
+      this.continueError = 'Weiterverarbeitung durch den Server fehlgeschlagen.';
+    }
   }
 
-  private createPreviewUrl(path: string): SafeResourceUrl {
-    return this.sanitizer.bypassSecurityTrustResourceUrl(
-      `${path}#toolbar=0&navpanes=0&scrollbar=1&view=FitH`,
-    );
+  private startPolling(): void {
+    this.stopPolling();
+    this.pollHandle = setInterval(() => {
+      void this.refreshProcessState();
+      if (this.flowService.canEnterSummary()) {
+        this.stopPolling();
+      }
+    }, 3000);
+  }
+
+  private stopPolling(): void {
+    if (!this.pollHandle) {
+      return;
+    }
+    clearInterval(this.pollHandle);
+    this.pollHandle = null;
+  }
+
+  private async refreshProcessState(): Promise<void> {
+    if (this.isRefreshing) {
+      return;
+    }
+
+    this.isRefreshing = true;
+    this.apiError = '';
+    try {
+      await this.flowService.refreshResults();
+      this.documents = this.flowService.getDisplayDocuments();
+      if (this.selectedDocumentIndex >= this.documents.length) {
+        this.selectedDocumentIndex = Math.max(this.documents.length - 1, 0);
+      }
+    } catch {
+      this.apiError = 'Ergebnisse konnten nicht vom Server geladen werden.';
+    } finally {
+      this.isRefreshing = false;
+    }
   }
 }

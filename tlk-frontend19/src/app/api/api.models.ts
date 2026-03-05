@@ -1,30 +1,33 @@
 export interface StartResponse {
-  id?: string;
-  message?: string;
-  [key: string]: unknown;
+  id: string;
 }
 
 export interface ProcessProgress {
-  status?: string;
-  progress?: number;
-  [key: string]: unknown;
+  progress: number;
 }
 
 export interface SubDocument {
-  id?: string;
-  title?: string;
-  [key: string]: unknown;
+  documentData: string;
+  category: string;
+  firstName?: string;
+  surname?: string;
+  vsnr?: string;
+  birthDate?: string;
+  summary?: string;
+  additionalFields?: Record<string, unknown>;
 }
 
 export interface ResultResponse {
-  id?: string;
-  progress?: ProcessProgress;
-  documents?: SubDocument[];
-  extractedData?: Record<string, unknown>;
-  [key: string]: unknown;
+  id: string;
+  firstName?: string;
+  surname?: string;
+  summary?: string;
+  vsnr?: string;
+  birthDate?: string;
+  documents: SubDocument[];
 }
 
 export interface ApiError {
-  message?: string;
-  [key: string]: unknown;
+  code: 'BAD_REQUEST' | 'NOT_FOUND' | 'SERVER_ERROR';
+  message: string;
 }

@@ -42,17 +42,34 @@
           und vollständig sind.
         </p>
         <drv-status icon="info" bgColor="ui-05">
-          Erlaubtes Format: PDF. Es können bis zu 5 Dokumente mit insgesamt maximal 1 GB hochgeladen werden.
+          Erlaubtes Format: PDF. Es kann genau ein Dokument mit maximal 1 GB hochgeladen werden.
         </drv-status>
       </section>
 
       <section class="fd-section">
         <drv-textinput
           label="Versicherungsnummer"
-          placeholder="Versicherungsnummer eingeben"
-          [required]="false"
-          optionalText="optional"
+          placeholder="z. B. 12 150890 M 123"
+          [required]="true"
+          [ngModel]="insuranceNumber"
+          (ngModelChange)="onInsuranceNumberChange($event)"
         ></drv-textinput>
+        <p class="fd-help-text">Format: 12 150890 M 123 (3-8 = Geburtsdatum TTMMJJ, 9 = Anfangsbuchstabe Geburtsname)</p>
+        <div class="fd-vsnr-examples" aria-label="Beispiel Versicherungsnummern">
+          <p>Beispielnummern zum Testen:</p>
+          <ul>
+            <li><code>12 150890 M 123</code></li>
+            <li><code>65 010203 A 987</code></li>
+            <li><code>47 311299 Z 456</code></li>
+            <li><code>03 290200 B 111</code></li>
+            <li><code>99 070777 K 222</code></li>
+          </ul>
+        </div>
+        @if (hasInteractedWithRequiredFields && insuranceNumber.trim() && !isInsuranceNumberValid) {
+          <p class="fd-error" role="alert">
+            Die Versicherungsnummer ist ungültig. Erwartetes Format: 12 150890 M 123.
+          </p>
+        }
 
         <drv-uploadfield
           label="Datei hochladen"
@@ -60,7 +77,7 @@
           btnLabel="Datei auswählen"
           dropzoneText="Datei hier ablegen oder auswählen"
           accept=".pdf"
-          [multiple]="true"
+          [multiple]="false"
           [required]="true"
           [ngModel]="selectedFiles"
           (ngModelChange)="onFilesSelected($event)"
@@ -68,7 +85,7 @@
 
         @if (selectedFileCount > 0) {
           <div class="fd-upload-summary" aria-live="polite">
-            <p>{{ selectedFileCount }} Datei(en) ausgewählt, Gesamtgröße: {{ selectedFileSizeTotalMb }} MB</p>
+            <p>1 Datei ausgewählt, Gesamtgröße: {{ selectedFileSizeTotalMb }} MB</p>
             <ul class="fd-upload-list">
               @for (file of selectedFileList; track file.name + file.size; let index = $index) {
                 <li>
@@ -102,12 +119,21 @@
         @if (missingRequiredError) {
           <p class="fd-error" role="alert">{{ missingRequiredError }}</p>
         }
+
+        @if (startError) {
+          <p class="fd-error" role="alert">{{ startError }}</p>
+        }
       </section>
 
       <section class="fd-actions">
         <drv-buttonbar placing="space-between" layoutMobile="block" [wrap]="true">
           <drv-button label="Zurück zu Dokumentenstapel" kind="secondary" (buttonClick)="cancelFlow()"></drv-button>
-          <drv-button label="Verarbeitung starten" kind="primary" [disabled]="!canContinue" (buttonClick)="goToProcess()"></drv-button>
+          <drv-button
+            [label]="isStartingProcessing ? 'Verarbeitung startet ...' : 'Verarbeitung starten'"
+            kind="primary"
+            [disabled]="!canContinue"
+            (buttonClick)="goToProcess()"
+          ></drv-button>
         </drv-buttonbar>
       </section>
     </main>

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   ApplicationHeaderComponent,
@@ -33,23 +33,21 @@ import { StapleFlowService } from '../staple-flow.service';
   standalone: true,
   styleUrl: './summary.component.scss',
 })
-export class SummaryComponent {
+export class SummaryComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly flowService = inject(StapleFlowService);
 
-  readonly summaryData: TableData = {
-    header: [
-      { label: 'Bereich' },
-      { label: 'Status' },
-      { label: 'Hinweis' },
-    ],
-    body: [
-      ['Persönliche Angaben', 'Vollständig', 'Keine offenen Punkte'],
-      ['Dokumentenupload', '2 Dateien', 'Geburtsurkunde und Schulbescheinigung'],
-      ['Prüfung', 'Ausstehend', 'Automatische Plausibilitätsprüfung läuft bei Versand'],
-      ['Kontakt', 'Optional', 'E-Mail-Adresse wurde angegeben'],
-    ],
+  summaryData: TableData = {
+    header: [{ label: 'Bereich' }, { label: 'Status' }, { label: 'Hinweis' }],
+    body: [],
   };
+
+  ngOnInit(): void {
+    this.summaryData = {
+      ...this.summaryData,
+      body: this.flowService.getSummaryRows(),
+    };
+  }
 
   cancelFlow(): void {
     this.flowService.resetFlow();

@@ -44,11 +44,15 @@ export class UploadComponent {
   private readonly router = inject(Router);
   private readonly flowService = inject(StapleFlowService);
   private readonly maxTotalFileSizeBytes = 1024 * 1024 * 1024;
-  private readonly maxDocumentCount = 5;
+  private readonly maxDocumentCount = 1;
+  private readonly insuranceNumberPattern = /^\d{2}\s(0[1-9]|[12]\d|3[01])(0[1-9]|1[0-2])\d{2}\s[A-Za-z]\s\d{3}$/;
 
   selectedFiles: FileList | null = null;
+  insuranceNumber = '';
   isConfirmationChecked = false;
   uploadError = '';
+  startError = '';
+  isStartingProcessing = false;
   hasInteractedWithRequiredFields = false;
 
   cancelFlow(): void {
@@ -56,19 +60,27 @@ export class UploadComponent {
     void this.router.navigate(['/staples']);
   }
 
-  goToProcess(): void {
+  async goToProcess(): Promise<void> {
     this.hasInteractedWithRequiredFields = true;
+    this.startError = '';
 
-    if (this.uploadError) {
+    if (this.uploadError || this.isStartingProcessing) {
       return;
     }
 
-    if (!this.selectedFileCount || !this.isConfirmationChecked) {
+    if (!this.selectedFileCount || !this.isConfirmationChecked || !this.isInsuranceNumberValid) {
       return;
     }
 
-    this.flowService.completeUpload();
-    void this.router.navigate(['/process']);
+    this.isStartingProcessing = true;
+    try {
+      await this.flowService.startServerProcessing(this.selectedFileList);
+      void this.router.navigate(['/process']);
+    } catch {
+      this.startError = 'Die Verarbeitung konnte nicht gestartet werden. Bitte versuchen Sie es erneut.';
+    } finally {
+      this.isStartingProcessing = false;
+    }
   }
 
   onFilesSelected(files: FileList | null): void {
@@ -82,6 +94,11 @@ export class UploadComponent {
     this.isConfirmationChecked = value;
   }
 
+  onInsuranceNumberChange(value: string): void {
+    this.hasInteractedWithRequiredFields = true;
+    this.insuranceNumber = value;
+  }
+
   removeSelectedFile(fileIndex: number): void {
     this.hasInteractedWithRequiredFields = true;
     const updatedFiles = this.selectedFileList.filter((_, index) => index !== fileIndex);
@@ -90,14 +107,24 @@ export class UploadComponent {
   }
 
   get canContinue(): boolean {
-    return !this.uploadError && this.selectedFileCount > 0 && this.isConfirmationChecked;
+    return (
+      !this.uploadError
+      && this.selectedFileCount > 0
+      && this.isConfirmationChecked
+      && this.isInsuranceNumberValid
+      && !this.isStartingProcessing
+    );
   }
 
   get missingRequiredError(): string {
     if (!this.hasInteractedWithRequiredFields || this.uploadError || this.canContinue) {
       return '';
     }
-    return 'Bitte wählen Sie mindestens eine PDF-Datei aus und bestätigen Sie die Erklärung.';
+    return 'Bitte geben Sie eine gültige Versicherungsnummer an, wählen Sie genau eine PDF-Datei aus und bestätigen Sie die Erklärung.';
+  }
+
+  get isInsuranceNumberValid(): boolean {
+    return this.insuranceNumberPattern.test(this.insuranceNumber.trim());
   }
 
   get selectedFileList(): File[] {
@@ -143,7 +170,7 @@ export class UploadComponent {
     }
 
     if (files.length > this.maxDocumentCount) {
-      validationMessages.push(`Es sind maximal ${this.maxDocumentCount} Dokumente erlaubt.`);
+      validationMessages.push('Es ist nur ein Dokument erlaubt.');
     }
 
     if (totalBytes > this.maxTotalFileSizeBytes) {
