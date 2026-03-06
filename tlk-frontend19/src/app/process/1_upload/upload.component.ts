@@ -48,10 +48,13 @@ export class UploadComponent {
 
   selectedFiles: FileList | null = null;
   insuranceNumber = '12 150890 M 123';
+  existingVorgangId = '';
   isConfirmationChecked = false;
   uploadError = '';
   startError = '';
+  openExistingError = '';
   isStartingProcessing = false;
+  isOpeningExistingProcess = false;
   hasInteractedWithRequiredFields = false;
 
   cancelFlow(): void {
@@ -82,6 +85,29 @@ export class UploadComponent {
     }
   }
 
+  async openExistingProcess(): Promise<void> {
+    this.openExistingError = '';
+    if (this.isOpeningExistingProcess) {
+      return;
+    }
+
+    const vorgangId = this.existingVorgangId.trim();
+    if (!vorgangId) {
+      this.openExistingError = 'Bitte geben Sie eine Vorgangs-ID ein.';
+      return;
+    }
+
+    this.isOpeningExistingProcess = true;
+    try {
+      await this.flowService.openExistingProcess(vorgangId);
+      void this.router.navigate(['/process']);
+    } catch {
+      this.openExistingError = 'Vorgang konnte nicht geladen werden. Bitte ID pruefen und erneut versuchen.';
+    } finally {
+      this.isOpeningExistingProcess = false;
+    }
+  }
+
   onFilesSelected(files: FileList | null): void {
     this.hasInteractedWithRequiredFields = true;
     this.selectedFiles = files;
@@ -96,6 +122,10 @@ export class UploadComponent {
   onInsuranceNumberChange(value: string): void {
     this.hasInteractedWithRequiredFields = true;
     this.insuranceNumber = value;
+  }
+
+  onExistingVorgangIdChange(value: string): void {
+    this.existingVorgangId = value;
   }
 
   removeSelectedFile(fileIndex: number): void {

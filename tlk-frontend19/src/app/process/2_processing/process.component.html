@@ -67,16 +67,41 @@
           Hier werden die Ergebnisse aus dem Workflow angezeigt..
         </p>
         <drv-status bgColor="ui-05">{{ progressText }}</drv-status>
+        <div class="fd-vorgang-data">
+          <p><strong>Vorgangs-ID:</strong> {{ vorgangData.vorgangId || '-' }}</p>
+          <p><strong>Vorgang-Status:</strong> {{ vorgangData.vorgangStatus }}</p>
+          <p><strong>Stapel-ID:</strong> {{ vorgangData.stapelId || '-' }}</p>
+          <p><strong>Stapelname:</strong> {{ vorgangData.stapelName || '-' }}</p>
+          <p><strong>Stapel-Status:</strong> {{ vorgangData.stapelStatus }}</p>
+        </div>
         @if (apiError) {
           <p class="fd-error" role="alert">{{ apiError }}</p>
         }
       </section>
 
       <section class="fd-section">
-        <div class="fd-compare-grid">
+        <div
+          #compareGrid
+          class="fd-compare-grid"
+          [style.grid-template-columns]="compareGridTemplateColumns"
+        >
           <article class="fd-pane">
             <h2>Ausgewählte Seite</h2>
             @if (selectedPage; as page) {
+              @if (isPreviewLoading) {
+                <p>PDF-Vorschau wird geladen...</p>
+              }
+              @if (previewError) {
+                <p class="fd-error">{{ previewError }}</p>
+              }
+              @if (selectedPagePreviewUrl; as previewUrl) {
+                <div class="fd-preview-frame">
+                  <iframe
+                    title="PDF Vorschau der ausgewaehlten Seite"
+                    [src]="previewUrl"
+                  ></iframe>
+                </div>
+              }
               <div class="fd-document-preview">
                 <p><strong>Seite:</strong> {{ page.pageNo }}</p>
                 <p><strong>Status:</strong> {{ page.status }}</p>
@@ -90,19 +115,22 @@
             }
           </article>
 
+          <div
+            class="fd-splitter"
+            role="separator"
+            aria-label="Breite zwischen Vorschau und Extraktion anpassen"
+            aria-orientation="vertical"
+            tabindex="0"
+            (pointerdown)="onDividerPointerDown($event)"
+          ></div>
+
           <article class="fd-pane">
             <h2>Extrahierte Inhalte</h2>
             @if (selectedPage; as page) {
               @if (page.hasExtract) {
-                <section class="fd-kv-section">
-                  <h3>Markdown</h3>
+                <div class="fd-markdown-frame">
                   <pre class="fd-code-block">{{ page.markdown }}</pre>
-                </section>
-
-                <section class="fd-kv-section">
-                  <h3>Docling JSON</h3>
-                  <pre class="fd-code-block">{{ page.doclingJson }}</pre>
-                </section>
+                </div>
               } @else {
                 <p>Für diese Seite liegt noch kein Extrakt vor.</p>
               }

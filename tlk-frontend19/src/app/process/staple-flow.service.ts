@@ -1,16 +1,25 @@
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../api/api/api.service';
-import { PageExtractResponse, PageInfo, VorgangWorkflowStatusResponse } from '../api/model/models';
+import { VorgangPageResult, VorgangWorkflowStatusResponse } from '../api/model/models';
 
 type WorkflowPageResult = {
   pageId: string;
   pageNo: number;
   status: string;
   errorMessage: string;
+  text: string;
   markdown: string;
   doclingJson: string;
   extractLoaded: boolean;
+};
+
+type WorkflowVorgangResult = {
+  vorgangId: string;
+  vorgangStatus: string;
+  stapelId: string;
+  stapelName: string;
+  stapelStatus: string;
 };
 
 type StapleFlowState = {
@@ -22,6 +31,9 @@ type StapleFlowState = {
   vorgangId: string;
   stapelId: string;
   workflowStatus: string;
+  vorgangStatus: string;
+  stapelName: string;
+  stapelStatus: string;
   pagesTotal: number;
   pagesDone: number;
   pagesFailed: number;
@@ -33,6 +45,8 @@ export type WorkflowPageDisplay = WorkflowPageResult & {
   hasExtract: boolean;
 };
 
+export type WorkflowVorgangDisplay = WorkflowVorgangResult;
+
 const DEFAULT_STATE: StapleFlowState = {
   uploadCompleted: false,
   processingCompleted: false,
@@ -42,6 +56,9 @@ const DEFAULT_STATE: StapleFlowState = {
   vorgangId: '',
   stapelId: '',
   workflowStatus: '',
+  vorgangStatus: '',
+  stapelName: '',
+  stapelStatus: '',
   pagesTotal: 0,
   pagesDone: 0,
   pagesFailed: 0,
@@ -55,13 +72,16 @@ const STORAGE_KEY = 'staple_flow_state';
 export class StapleFlowService {
   private readonly apiClient = inject(ApiService);
   private state: StapleFlowState = this.loadState();
+  private readonly pagePdfObjectUrls = new Map<string, string>();
 
   startFlow(): void {
+    this.clearPagePdfObjectUrls();
     this.state = { ...DEFAULT_STATE };
     this.persistState();
   }
 
   resetFlow(): void {
+    this.clearPagePdfObjectUrls();
     this.state = { ...DEFAULT_STATE };
     this.persistState();
   }
@@ -87,6 +107,9 @@ export class StapleFlowService {
     this.state.vorgangId = createResponse.vorgangId;
     this.state.stapelId = createResponse.stapelId;
     this.state.workflowStatus = '';
+    this.state.vorgangStatus = '';
+    this.state.stapelName = '';
+    this.state.stapelStatus = '';
     this.state.pagesTotal = 0;
     this.state.pagesDone = 0;
     this.state.pagesFailed = 0;
@@ -95,20 +118,67 @@ export class StapleFlowService {
     this.persistState();
   }
 
+  async openExistingProcess(vorgangId: string): Promise<void> {
+    const trimmedVorgangId = vorgangId.trim();
+    if (!trimmedVorgangId) {
+      throw new Error('Bitte eine gueltige Vorgangs-ID eingeben.');
+    }
+
+    const workflow = await firstValueFrom(this.apiClient.getVorgangWorkflowStatus(trimmedVorgangId));
+    const stapelId = workflow.stapel[0]?.stapelId ?? '';
+    if (!stapelId) {
+      throw new Error('Zu dieser Vorgangs-ID wurde kein Dokumentenstapel gefunden.');
+    }
+
+    this.state.uploadCompleted = true;
+    this.state.processingCompleted = false;
+    this.state.caseNumber = workflow.vorgangId;
+    this.state.capturedAt = this.state.capturedAt || this.formatDate(new Date());
+    this.state.insuranceNumber = '';
+    this.state.vorgangId = workflow.vorgangId;
+    this.state.stapelId = stapelId;
+    this.state.workflowStatus = workflow.status;
+    this.state.vorgangStatus = workflow.status;
+    this.state.stapelName = '';
+    this.state.stapelStatus = workflow.stapel[0]?.status ?? '';
+    this.state.pagesTotal = workflow.pagesTotal;
+    this.state.pagesDone = workflow.pagesDone;
+    this.state.pagesFailed = workflow.pagesFailed;
+    this.state.llmTriggered = false;
+    this.state.pages = [];
+    this.persistState();
+  }
+
   async refreshResults(): Promise<void> {
-    if (!this.state.vorgangId || !this.state.stapelId) {
+    if (!this.state.vorgangId) {
       return;
     }
 
     const workflow = await firstValueFrom(this.apiClient.getVorgangWorkflowStatus(this.state.vorgangId));
-    const pages = await firstValueFrom(this.apiClient.getDokumentenstapelPages(this.state.stapelId));
-    const sortedPages = [...pages].sort((a, b) => a.pageNo - b.pageNo);
+    const results = await firstValueFrom(this.apiClient.getVorgangResults(this.state.vorgangId));
+    const stapelResult = this.resolveStapelResult(results.stapel, this.state.stapelId || workflow.stapel[0]?.stapelId || '');
+    if (!stapelResult) {
+      this.state.workflowStatus = workflow.status;
+      this.state.vorgangStatus = results.status;
+      this.state.stapelName = '';
+      this.state.stapelStatus = '';
+      this.state.pagesTotal = workflow.pagesTotal;
+      this.state.pagesDone = workflow.pagesDone;
+      this.state.pagesFailed = workflow.pagesFailed;
+      this.state.pages = [];
+      this.state.processingCompleted = this.isWorkflowCompleted(workflow, []);
+      this.persistState();
+      return;
+    }
 
-    const pagesWithExtracts = await Promise.all(
-      sortedPages.map((page) => this.loadPageResult(page)),
-    );
+    const sortedPages = [...stapelResult.pages].sort((a, b) => a.pageNo - b.pageNo);
+    const pagesWithExtracts = sortedPages.map((page) => this.mapVorgangPageResult(page));
 
     this.state.workflowStatus = workflow.status;
+    this.state.vorgangStatus = results.status;
+    this.state.stapelId = stapelResult.stapelId;
+    this.state.stapelName = stapelResult.stapelName;
+    this.state.stapelStatus = stapelResult.status;
     this.state.pagesTotal = workflow.pagesTotal;
     this.state.pagesDone = workflow.pagesDone;
     this.state.pagesFailed = workflow.pagesFailed;
@@ -159,6 +229,38 @@ export class StapleFlowService {
     return this.state.workflowStatus || 'WARTET_AUF_ERGEBNISSE';
   }
 
+  getVorgangResults(): WorkflowVorgangDisplay {
+    return {
+      vorgangId: this.state.vorgangId,
+      vorgangStatus: this.state.vorgangStatus || this.state.workflowStatus || 'UNBEKANNT',
+      stapelId: this.state.stapelId,
+      stapelName: this.state.stapelName,
+      stapelStatus: this.state.stapelStatus || 'UNBEKANNT',
+    };
+  }
+
+  async getPagePdfObjectUrl(pageId: string): Promise<string> {
+    const cachedUrl = this.pagePdfObjectUrls.get(pageId);
+    if (cachedUrl) {
+      return cachedUrl;
+    }
+
+    const blob = await firstValueFrom(
+      this.apiClient.getPagePdf(pageId, 'body', false, {
+        httpHeaderAccept: 'application/pdf',
+        transferCache: false,
+      }),
+    );
+    const objectUrl = URL.createObjectURL(blob);
+    this.pagePdfObjectUrls.set(pageId, objectUrl);
+    return objectUrl;
+  }
+
+  clearPagePdfObjectUrls(): void {
+    this.pagePdfObjectUrls.forEach((url) => URL.revokeObjectURL(url));
+    this.pagePdfObjectUrls.clear();
+  }
+
   getWorkflowProgressPercent(): number {
     if (this.state.pagesTotal <= 0) {
       return 0;
@@ -188,41 +290,31 @@ export class StapleFlowService {
     ];
   }
 
-  private async loadPageResult(page: PageInfo): Promise<WorkflowPageResult> {
-    if (!this.shouldLoadExtract(page.status)) {
-      return {
-        pageId: page.pageId,
-        pageNo: page.pageNo,
-        status: page.status,
-        errorMessage: this.readNullableString(page.errorMessage),
-        markdown: '',
-        doclingJson: '',
-        extractLoaded: false,
-      };
-    }
+  private mapVorgangPageResult(page: VorgangPageResult): WorkflowPageResult {
+    const doclingJson = this.stringifyDoclingJson(page.doclingJson);
+    return {
+      pageId: page.pageId,
+      pageNo: page.pageNo,
+      status: page.status,
+      errorMessage: this.readNullableString(page.errorMessage),
+      text: page.text || '',
+      markdown: page.markdown || '',
+      doclingJson,
+      extractLoaded: Boolean(page.markdown || doclingJson || page.text),
+    };
+  }
 
-    try {
-      const extract = await firstValueFrom(this.apiClient.getPageExtract(page.pageId));
-      return {
-        pageId: page.pageId,
-        pageNo: page.pageNo,
-        status: page.status,
-        errorMessage: this.readNullableString(page.errorMessage),
-        markdown: extract.markdown,
-        doclingJson: this.stringifyDoclingJson(extract),
-        extractLoaded: true,
-      };
-    } catch {
-      return {
-        pageId: page.pageId,
-        pageNo: page.pageNo,
-        status: page.status,
-        errorMessage: this.readNullableString(page.errorMessage) || 'Extrakt konnte noch nicht geladen werden.',
-        markdown: '',
-        doclingJson: '',
-        extractLoaded: false,
-      };
+  private resolveStapelResult(
+    stapelResults: Array<{ stapelId: string; stapelName: string; status: string; pages: VorgangPageResult[] }>,
+    preferredStapelId: string,
+  ): { stapelId: string; stapelName: string; status: string; pages: VorgangPageResult[] } | null {
+    if (stapelResults.length === 0) {
+      return null;
     }
+    if (!preferredStapelId) {
+      return stapelResults[0];
+    }
+    return stapelResults.find((stapel) => stapel.stapelId === preferredStapelId) ?? stapelResults[0];
   }
 
   private shouldLoadExtract(status: string): boolean {
@@ -233,9 +325,9 @@ export class StapleFlowService {
       || normalized.includes('SUCCESS');
   }
 
-  private stringifyDoclingJson(extract: PageExtractResponse): string {
+  private stringifyDoclingJson(doclingJson: unknown): string {
     try {
-      return JSON.stringify(extract.doclingJson, null, 2);
+      return JSON.stringify(doclingJson, null, 2);
     } catch {
       return '';
     }
@@ -301,6 +393,9 @@ export class StapleFlowService {
         vorgangId: parsed.vorgangId ?? '',
         stapelId: parsed.stapelId ?? '',
         workflowStatus: parsed.workflowStatus ?? '',
+        vorgangStatus: parsed.vorgangStatus ?? '',
+        stapelName: parsed.stapelName ?? '',
+        stapelStatus: parsed.stapelStatus ?? '',
         pagesTotal: Number(parsed.pagesTotal ?? 0),
         pagesDone: Number(parsed.pagesDone ?? 0),
         pagesFailed: Number(parsed.pagesFailed ?? 0),

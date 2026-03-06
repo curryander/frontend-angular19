@@ -4,4 +4,7 @@ export * from './jsonNullableString';
 export * from './pageExtractResponse';
 export * from './pageInfo';
 export * from './stapelProgress';
+export * from './vorgangPageResult';
+export * from './vorgangResultsResponse';
+export * from './vorgangStapelResult';
 export * from './vorgangWorkflowStatusResponse';

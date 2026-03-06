@@ -25,6 +25,8 @@ import { PageExtractResponse } from '../model/pageExtractResponse';
 // @ts-ignore
 import { PageInfo } from '../model/pageInfo';
 // @ts-ignore
+import { VorgangResultsResponse } from '../model/vorgangResultsResponse';
+// @ts-ignore
 import { VorgangWorkflowStatusResponse } from '../model/vorgangWorkflowStatusResponse';
 
 // @ts-ignore
@@ -259,6 +261,109 @@ export class ApiService extends BaseService {
         let localVarPath = `/api/v1/pages/${this.configuration.encodeParam({name: "pageId", value: pageId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/extract`;
         const { basePath, withCredentials } = this.configuration;
         return this.httpClient.request<PageExtractResponse>('get', `${basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                responseType: <any>responseType_,
+                ...(withCredentials ? { withCredentials } : {}),
+                headers: localVarHeaders,
+                observe: observe,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Liefert das PDF einer einzelnen Seite
+     * @endpoint get /api/v1/pages/{pageId}/pdf
+     * @param pageId Die ID der Seite.
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     * @param options additional options
+     */
+    public getPagePdf(pageId: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/pdf' | 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Blob>;
+    public getPagePdf(pageId: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/pdf' | 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Blob>>;
+    public getPagePdf(pageId: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/pdf' | 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Blob>>;
+    public getPagePdf(pageId: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/pdf' | 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (pageId === null || pageId === undefined) {
+            throw new Error('Required parameter pageId was null or undefined when calling getPagePdf.');
+        }
+
+        let localVarHeaders = this.defaultHeaders;
+
+        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'application/pdf',
+            'application/json'
+        ]);
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+        const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+
+        let localVarPath = `/api/v1/pages/${this.configuration.encodeParam({name: "pageId", value: pageId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/pdf`;
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request('get', `${basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                responseType: "blob",
+                ...(withCredentials ? { withCredentials } : {}),
+                headers: localVarHeaders,
+                observe: observe,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Liefert Ergebnisse eines vorhandenen Vorgangs
+     * Enthält Stapel, Seiten und Extraktionsdaten zur Übergabe ans Frontend.
+     * @endpoint get /api/v1/vorgaenge/{vorgangId}/results
+     * @param vorgangId Die ID des Vorgangs.
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     * @param options additional options
+     */
+    public getVorgangResults(vorgangId: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<VorgangResultsResponse>;
+    public getVorgangResults(vorgangId: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<VorgangResultsResponse>>;
+    public getVorgangResults(vorgangId: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<VorgangResultsResponse>>;
+    public getVorgangResults(vorgangId: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+        if (vorgangId === null || vorgangId === undefined) {
+            throw new Error('Required parameter vorgangId was null or undefined when calling getVorgangResults.');
+        }
+
+        let localVarHeaders = this.defaultHeaders;
+
+        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'application/json'
+        ]);
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+        const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/api/v1/vorgaenge/${this.configuration.encodeParam({name: "vorgangId", value: vorgangId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/results`;
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<VorgangResultsResponse>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,

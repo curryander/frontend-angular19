@@ -10,11 +10,14 @@
 import { JsonNullableString } from './jsonNullableString';
 
 
-export interface PageInfo { 
+export interface VorgangPageResult { 
     pageId: string;
     pdfUrl: string;
     pageNo: number;
     status: string;
     errorMessage?: JsonNullableString;
+    text: string;
+    markdown: string;
+    doclingJson: { [key: string]: object; };
 }
 

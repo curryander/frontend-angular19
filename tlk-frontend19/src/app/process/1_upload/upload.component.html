@@ -135,6 +135,28 @@
           ></drv-button>
         </drv-buttonbar>
       </section>
+      <section class="fd-section">
+        <h2>Vorhandenen Vorgang oeffnen</h2>
+        <p>Mit einer vorhandenen Vorgangs-ID koennen Sie direkt zur Pruefung wechseln.</p>
+
+        <drv-textinput
+          label="Vorgangs-ID"
+          placeholder="z. B. 5e7d7e84-9b30-4be3-8b42-7f44c53b5c54"
+          [ngModel]="existingVorgangId"
+          (ngModelChange)="onExistingVorgangIdChange($event)"
+        ></drv-textinput>
+
+        <drv-button
+          [label]="isOpeningExistingProcess ? 'Vorgang wird geladen ...' : 'Zur Pruefung mit Vorgangs-ID'"
+          kind="secondary"
+          [disabled]="isOpeningExistingProcess"
+          (buttonClick)="openExistingProcess()"
+        ></drv-button>
+
+        @if (openExistingError) {
+          <p class="fd-error" role="alert">{{ openExistingError }}</p>
+        }
+      </section>
     </main>
   </div>
 </div>

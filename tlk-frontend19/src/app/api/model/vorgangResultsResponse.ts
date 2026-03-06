@@ -7,14 +7,12 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { JsonNullableString } from './jsonNullableString';
+import { VorgangStapelResult } from './vorgangStapelResult';
 
 
-export interface PageInfo { 
-    pageId: string;
-    pdfUrl: string;
-    pageNo: number;
+export interface VorgangResultsResponse { 
+    vorgangId: string;
     status: string;
-    errorMessage?: JsonNullableString;
+    stapel: Array<VorgangStapelResult>;
 }
 

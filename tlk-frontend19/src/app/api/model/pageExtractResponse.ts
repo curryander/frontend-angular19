@@ -11,6 +11,7 @@
 
 export interface PageExtractResponse { 
     pageId: string;
+    text: string;
     markdown: string;
     doclingJson: { [key: string]: object; };
 }

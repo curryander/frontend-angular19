@@ -15,6 +15,9 @@ model/models.ts
 model/pageExtractResponse.ts
 model/pageInfo.ts
 model/stapelProgress.ts
+model/vorgangPageResult.ts
+model/vorgangResultsResponse.ts
+model/vorgangStapelResult.ts
 model/vorgangWorkflowStatusResponse.ts
 param.ts
 provide-api.ts
