@@ -1,3 +1,5 @@
 export * from './api.service';
 import { ApiService } from './api.service';
-export const APIS = [ApiService];
+export * from './databaseHealthController.service';
+import { DatabaseHealthControllerService } from './databaseHealthController.service';
+export const APIS = [ApiService, DatabaseHealthControllerService];

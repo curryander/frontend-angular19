@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const url = process.env.OPENAPI_URL ?? "http://localhost:8181/v3/api-docs.yaml";
+const url = process.env.OPENAPI_URL ?? "https://the-lion-king.mnga3x4jwz5xc.eu-central-1.cs.amazonlightsail.com/v3/api-docs.yaml";
 const outPath = path.resolve("openapi/openapi.yaml");
 
 console.log(`Downloading OpenAPI spec from: ${url}`);

@@ -3,7 +3,7 @@ import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 
 import { routes } from './app.routes';
-import {CONFIG_TOKEN, DEFAULT_CONFIG_PRODUCTIVE} from '@drv-ds/drv-design-system-ng';
+import { CONFIG_TOKEN, DEFAULT_CONFIG_PRODUCTIVE } from '@drv-ds/drv-design-system-ng';
 import { httpLoggingInterceptor } from './core/http-logging.interceptor';
 
 export const appConfig: ApplicationConfig = {

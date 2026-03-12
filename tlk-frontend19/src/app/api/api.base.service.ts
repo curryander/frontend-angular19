@@ -13,7 +13,7 @@ import { Configuration } from './configuration';
 import { OpenApiHttpParams, QueryParamStyle, concatHttpParamsObject} from './query.params';
 
 export class BaseService {
-    protected basePath = 'http://localhost:8181';
+    protected basePath = 'http://the-lion-king.mnga3x4jwz5xc.eu-central-1.cs.amazonlightsail.com';
     public defaultHeaders = new HttpHeaders();
     public configuration: Configuration;
     public encoder: HttpParameterCodec;

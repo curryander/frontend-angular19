@@ -3,7 +3,7 @@ info:
   title: OpenAPI definition
   version: v0
 servers:
-- url: http://localhost:8181
+- url: https://the-lion-king.mnga3x4jwz5xc.eu-central-1.cs.amazonlightsail.com
   description: Generated server url
 tags:
 - name: api
@@ -101,6 +101,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
+  /internal/health:
+    get:
+      tags:
+      - database-health-controller
+      operationId: health
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
   /api/v1/vorgaenge/{vorgangId}:
     get:
       tags:

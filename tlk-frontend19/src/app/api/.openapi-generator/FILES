@@ -4,6 +4,7 @@ api.base.service.ts
 api.module.ts
 api/api.service.ts
 api/api.ts
+api/databaseHealthController.service.ts
 configuration.ts
 encoder.ts
 git_push.sh
