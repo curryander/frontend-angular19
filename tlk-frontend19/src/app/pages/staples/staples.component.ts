@@ -1,46 +1,28 @@
-﻿import { Component, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { ButtonComponent } from '@drv-ds/drv-design-system-ng';
+import { firstValueFrom } from 'rxjs';
+import { DokumentenstapelService } from '../../api/api/dokumentenstapel.service';
+import { Dokumentenstapel } from '../../api/model/dokumentenstapel';
 import { StapleFlowService } from '../../process/staple-flow.service';
 
+type RawStapleEntry = string | Dokumentenstapel;
+
 type StapleDocument = {
+  id: string;
+  vorgangId: string;
   title: string;
   category: string;
-  url: string;
-  previewUrl: SafeResourceUrl;
+  downloadUrl: string | null;
+  previewUrl: SafeResourceUrl | null;
   addedAt: string;
+  createdAtRaw: string;
   pageCount: number | null;
-  pageCountLoading: boolean;
+  status: string;
+  previewLoading: boolean;
+  previewError: string;
 };
-
-const STAPLE_DOCUMENT_PATHS = [
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/SZ162211325091611260.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/SZ162211325091611270.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/SZ162211325091611280.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/SZ162211325091611300.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/SZ162211325091611310.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/SZ162211325091611311.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/SZ162211325091611320.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/SZ162211325091611340.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/SZ162211325091611360.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/SZ162211325091611361.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/SZ162211325091611370.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/SZ162211325091611380.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/SZ162211325091613120.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/SZ162211325091613130.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/SZ162211325091613131.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/SZ162211325091613300.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/SZ162211325091614050.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/SZ162211325091614051.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/leicht/SZ162211325091611260.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/leicht/SZ162211325091611270.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/leicht/SZ162211325091611300.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/leicht/SZ162211325091611310.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/leicht/SZ162211325091611360.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/leicht/SZ162211325091611370.pdf',
-  'staples-of-documents/Dateien (20) von Michael Vogel_ SZ162211325091611310/leicht/SZ162211325091614050.pdf',
-];
 
 @Component({
   selector: 'app-staples',
@@ -49,34 +31,28 @@ const STAPLE_DOCUMENT_PATHS = [
   templateUrl: './staples.component.html',
   styleUrl: './staples.component.scss',
 })
-export class StaplesComponent {
+export class StaplesComponent implements OnInit, OnDestroy {
   private readonly initialVisibleCount = 6;
   private readonly loadStep = 3;
-  private readonly defaultAddedAt = '17.07.2025';
   private readonly router = inject(Router);
   private readonly flowService = inject(StapleFlowService);
   private readonly sanitizer = inject(DomSanitizer);
-  activePreviewUrl: string | null = null;
-  readonly stapleDocuments: StapleDocument[] = STAPLE_DOCUMENT_PATHS.map((path, index) => {
-    const fileName = path.split('/').pop() ?? `document-${index + 1}.pdf`;
-    const category = path.includes('/leicht/') ? 'Leicht' : 'Standard';
-    const encodedPath = `/${encodeURI(path)}`;
-    return {
-      title: `Stapel ${index + 1}: ${fileName}`,
-      category,
-      url: encodedPath,
-      previewUrl: this.sanitizer.bypassSecurityTrustResourceUrl(
-        `${encodedPath}#toolbar=0&navpanes=0&scrollbar=1&view=FitH`,
-      ),
-      addedAt: this.defaultAddedAt,
-      pageCount: null,
-      pageCountLoading: false,
-    };
-  });
-  visibleDocumentCount = this.initialVisibleCount;
+  private readonly dokumentenstapelService = inject(DokumentenstapelService);
+  private readonly objectUrls = new Map<string, string>();
 
-  constructor() {
-    this.loadVisiblePageCounts();
+  activePreviewId: string | null = null;
+  readonly stapleDocuments: StapleDocument[] = [];
+  visibleDocumentCount = this.initialVisibleCount;
+  documentsLoading = false;
+  documentsError = '';
+
+  ngOnInit(): void {
+    void this.loadStaples();
+  }
+
+  ngOnDestroy(): void {
+    this.objectUrls.forEach((url) => URL.revokeObjectURL(url));
+    this.objectUrls.clear();
   }
 
   startStapleFlow(): void {
@@ -94,43 +70,141 @@ export class StaplesComponent {
 
   loadMoreDocuments(): void {
     this.visibleDocumentCount = Math.min(this.visibleDocumentCount + this.loadStep, this.stapleDocuments.length);
-    this.loadVisiblePageCounts();
   }
 
-  showPreview(url: string): void {
-    this.activePreviewUrl = url;
-  }
-
-  isPreviewActive(url: string): boolean {
-    return this.activePreviewUrl === url;
-  }
-
-  private loadVisiblePageCounts(): void {
-    for (const doc of this.visibleStapleDocuments) {
-      if (doc.pageCount === null && !doc.pageCountLoading) {
-        void this.resolvePageCount(doc);
-      }
+  async showPreview(doc: StapleDocument): Promise<void> {
+    this.activePreviewId = doc.id;
+    if (doc.previewUrl) {
+      return;
     }
-  }
 
-  private async resolvePageCount(doc: StapleDocument): Promise<void> {
-    doc.pageCountLoading = true;
+    doc.previewLoading = true;
+    doc.previewError = '';
+
     try {
-      const response = await fetch(doc.url);
-      if (!response.ok) {
-        doc.pageCount = -1;
+      const stapelUpload = await firstValueFrom(
+        this.dokumentenstapelService.getDokumentenstapelUpload(doc.id),
+      ) as Dokumentenstapel;
+      const uploadSource = this.resolveUploadSource(doc.id, stapelUpload);
+      if (!uploadSource) {
+        doc.previewError = 'Keine Vorschau verfügbar.';
+        this.activePreviewId = null;
         return;
       }
 
-      const buffer = await response.arrayBuffer();
-      const rawText = new TextDecoder('latin1').decode(buffer);
-      const matches = rawText.match(/\/Type\s*\/Page\b/g);
-      doc.pageCount = matches?.length ?? -1;
+      doc.title = stapelUpload.stapelName || stapelUpload.uploadFilename || stapelUpload.originalFilename || doc.title;
+      doc.pageCount = stapelUpload.seitenAnzahl ?? doc.pageCount;
+      doc.downloadUrl = uploadSource;
+      doc.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
+        `${uploadSource}#toolbar=0&navpanes=0&scrollbar=1&view=FitH`,
+      );
     } catch {
-      doc.pageCount = -1;
+      doc.previewError = 'Vorschau konnte nicht geladen werden.';
+      this.activePreviewId = null;
     } finally {
-      doc.pageCountLoading = false;
+      doc.previewLoading = false;
     }
   }
-}
 
+  isPreviewActive(docId: string): boolean {
+    return this.activePreviewId === docId;
+  }
+
+  private async loadStaples(): Promise<void> {
+    this.documentsLoading = true;
+    this.documentsError = '';
+
+    try {
+      const stapel = await firstValueFrom(this.dokumentenstapelService.getDokumentenstapel()) as unknown as RawStapleEntry[];
+      const mappedStaples = [...stapel].map((entry) => this.mapStaple(entry));
+
+      this.stapleDocuments.splice(0, this.stapleDocuments.length, ...mappedStaples);
+      this.stapleDocuments.sort((a, b) => this.toTimestamp(b.createdAtRaw) - this.toTimestamp(a.createdAtRaw));
+      this.visibleDocumentCount = Math.min(this.initialVisibleCount, this.stapleDocuments.length);
+    } catch {
+      this.documentsError = 'Dokumentenstapel konnten nicht geladen werden.';
+    } finally {
+      this.documentsLoading = false;
+    }
+  }
+
+  private mapStaple(stapel: RawStapleEntry): StapleDocument {
+    if (typeof stapel === 'string') {
+      return {
+        id: stapel,
+        vorgangId: '',
+        title: `Dokumentenstapel ${stapel}`,
+        category: 'DOKUMENTENSTAPEL',
+        downloadUrl: null,
+        previewUrl: null,
+        addedAt: '-',
+        createdAtRaw: '',
+        pageCount: null,
+        status: 'UNBEKANNT',
+        previewLoading: false,
+        previewError: '',
+      };
+    }
+
+    const fallbackTitle = stapel.originalFilename || stapel.uploadFilename || stapel.id || 'Unbenannter Stapel';
+
+    return {
+      id: stapel.id ?? '',
+      vorgangId: stapel.vorgangId ?? '',
+      title: stapel.stapelName || fallbackTitle,
+      category: stapel.status || 'UNBEKANNT',
+      downloadUrl: null,
+      previewUrl: null,
+      addedAt: this.formatDate(stapel.createdAt),
+      createdAtRaw: stapel.createdAt ?? '',
+      pageCount: stapel.seitenAnzahl ?? null,
+      status: stapel.status || 'UNBEKANNT',
+      previewLoading: false,
+      previewError: '',
+    };
+  }
+
+  private resolveUploadSource(stapelId: string, stapel: Dokumentenstapel): string | null {
+    if (!stapel.uploadPdf) {
+      return null;
+    }
+
+    const existingUrl = this.objectUrls.get(stapelId);
+    if (existingUrl) {
+      return existingUrl;
+    }
+
+    const binary = atob(stapel.uploadPdf);
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) {
+      bytes[index] = binary.charCodeAt(index);
+    }
+
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    const objectUrl = URL.createObjectURL(blob);
+    this.objectUrls.set(stapelId, objectUrl);
+    return objectUrl;
+  }
+
+  private toTimestamp(dateValue: string | undefined): number {
+    if (!dateValue) {
+      return 0;
+    }
+
+    const timestamp = Date.parse(dateValue);
+    return Number.isNaN(timestamp) ? 0 : timestamp;
+  }
+
+  private formatDate(dateValue: string | undefined): string {
+    if (!dateValue) {
+      return '-';
+    }
+
+    const timestamp = Date.parse(dateValue);
+    if (Number.isNaN(timestamp)) {
+      return '-';
+    }
+
+    return new Intl.DateTimeFormat('de-DE').format(new Date(timestamp));
+  }
+}

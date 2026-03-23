@@ -1,0 +1,642 @@
+openapi: 3.0.0
+info:
+  title: TheLionKing
+  description: "API fuer Dokumentenstapel-Workflow (Schritt 1: Split + Extraktion)"
+  version: 1.0.0
+servers:
+  - url: https://virtserver.swaggerhub.com/thelionking/TheLionKing/1.0.0
+    description: SwaggerHub API Auto Mocking
+  - url: https://api.example.com
+paths:
+  /vorgaenge:
+    post:
+      tags:
+        - Vorgaenge
+      summary: Legt einen neuen Vorgang mit Dokumentenstapel an
+      description: Erstellt Vorgang plus Dokumentenstapel und speichert das hochgeladene PDF. Optional wird Step1 asynchron gestartet.
+      operationId: createVorgangWithUpload
+      parameters:
+        - name: startProcessing
+          in: query
+          description: Wenn true, startet Step1 direkt asynchron.
+          required: false
+          schema:
+            type: boolean
+            default: true
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/vorgaenge_body"
+      responses:
+        "201":
+          description: Vorgang und Dokumentenstapel angelegt, Verarbeitung nicht gestartet.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateVorgangResponse"
+        "202":
+          description: Vorgang und Dokumentenstapel angelegt, Verarbeitung laeuft.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateVorgangResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          description: Interner Serverfehler.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /vorgaenge/{vorgangId}:
+    get:
+      tags:
+        - Vorgaenge
+      summary: Liefert Status und Fortschritt eines Vorgangs
+      operationId: getVorgangWorkflowStatus
+      parameters:
+        - $ref: "#/components/parameters/VorgangId"
+      responses:
+        "200":
+          description: Status gefunden.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VorgangWorkflowStatusResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /vorgaenge/{vorgangId}/results:
+    get:
+      tags:
+        - Vorgaenge
+      summary: Liefert Ergebnisse eines vorhandenen Vorgangs
+      description: Enthaelt Stapel, Seiten und Extraktionsdaten zur Uebergabe ans Frontend.
+      operationId: getVorgangResults
+      parameters:
+        - $ref: "#/components/parameters/VorgangId"
+      responses:
+        "200":
+          description: Ergebnisse gefunden.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VorgangResultsResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /dokumentenstapel:
+    get:
+      tags:
+        - Dokumentenstapel
+      summary: Liefert alle bisher angelegten Dokumentenstapel
+      operationId: getDokumentenstapel
+      responses:
+        "200":
+          description: Dokumentenstapelliste
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Dokumentenstapel"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /dokumentenstapel/{stapelId}/pages:
+    get:
+      tags:
+        - Dokumentenstapel
+      summary: Liefert alle Seiten eines Dokumentenstapels
+      operationId: getDokumentenstapelPages
+      parameters:
+        - $ref: "#/components/parameters/StapelId"
+      responses:
+        "200":
+          description: Seitenliste.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Page"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /dokumentenstapel/{stapelId}/upload:
+    get:
+      tags:
+        - Dokumentenstapel
+      summary: Liefert den Upload eines Dokumentenstapels
+      operationId: getDokumentenstapelUpload
+      parameters:
+        - $ref: "#/components/parameters/StapelId"
+      responses:
+        "200":
+          description: UploadPDF.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dokumentenstapel"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /pages/{pageId}/extract:
+    get:
+      tags:
+        - Pages
+      summary: Liefert Extrakt einer Seite
+      operationId: getPageExtract
+      parameters:
+        - $ref: "#/components/parameters/PageId"
+      responses:
+        "200":
+          description: Extrakt gefunden.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PageExtractResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /pages/{pageId}/pdf:
+    get:
+      tags:
+        - Pages
+      summary: Liefert das PDF einer einzelnen Seite
+      operationId: getPagePdf
+      parameters:
+        - $ref: "#/components/parameters/PageId"
+      responses:
+        "200":
+          description: Seiten-PDF gefunden.
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /dokumentenstapel/{stapelId}/split-and-extract:
+    post:
+      tags:
+        - Dokumentenstapel
+      summary: Startet Step1 manuell fuer einen Dokumentenstapel
+      operationId: triggerDokumentenstapelStep1
+      parameters:
+        - $ref: "#/components/parameters/StapelId"
+      responses:
+        "202":
+          description: Verarbeitung wurde gestartet.
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Status erlaubt keinen Trigger.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+components:
+  schemas:
+    Dokumentenstapel:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        vorgangId:
+          type: string
+          format: uuid
+        stapelName:
+          type: string
+        uploadFilename:
+          type: string
+        uploadPdf:
+          type: string
+          format: byte
+        originalFilename:
+          type: string
+        pdfStorageRef:
+          type: string
+        seitenAnzahl:
+          type: integer
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    Page:
+      type: object
+      properties:
+        stapelId:
+          type: string
+          format: uuid
+        pageNo:
+          type: integer
+        pdf:
+          type: string
+          format: byte
+        pdfPagePath:
+          type: string
+        sha256:
+          type: string
+        status:
+          type: string
+        errorMessage:
+          type: string
+          nullable: true
+        extractedText:
+          type: string
+          nullable: true
+        dokumentenstapelId:
+          type: string
+          format: uuid
+        seitenExtraktId:
+          type: string
+          format: uuid
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        usable:
+          type: boolean
+    SeitenExtrakt:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        seiteId:
+          type: string
+          format: uuid
+        markdown:
+          type: string
+          nullable: true
+        doclingJson:
+          type: string
+          nullable: true
+        ocrEngine:
+          type: string
+          nullable: true
+        extractedAt:
+          type: string
+          format: date-time
+          nullable: true
+    Document:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        document:
+          type: string
+          format: byte
+        documentNo:
+          type: integer
+          nullable: true
+        dokumentTyp:
+          type: string
+          nullable: true
+        confidence:
+          type: number
+          format: double
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
+        category:
+          type: string
+          nullable: true
+          enum:
+            - AUSWEIS
+            - GEBURTSURKUNDE
+            - STERBEURKUNDE
+            - ZEUGNIS
+            - STEUERBESCHEID
+            - KRANKENKASSENBESCHEINIGUNG
+            - SONSTIGE
+        firstName:
+          type: string
+          nullable: true
+        surname:
+          type: string
+          nullable: true
+        vsnr:
+          type: string
+          nullable: true
+        birthDate:
+          type: string
+          format: date
+          nullable: true
+        summary:
+          type: string
+          nullable: true
+        erkannteEntitaeten:
+          type: object
+          additionalProperties: true
+          nullable: true
+        dokumentenstapelId:
+          type: string
+          format: uuid
+    Versicherter:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        vorname:
+          type: string
+          nullable: true
+        nachname:
+          type: string
+          nullable: true
+        vsnr:
+          type: string
+        geburtsdatum:
+          type: string
+          format: date
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+    Vorgang:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        versicherterId:
+          type: string
+          format: uuid
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+        progress:
+          type: integer
+        summary:
+          type: string
+          nullable: true
+        errorCode:
+          type: string
+          nullable: true
+        errorMessage:
+          type: string
+          nullable: true
+        dokumentenstapelIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+    CreateVorgangResponse:
+      required:
+        - stapelId
+        - vorgangId
+      type: object
+      properties:
+        vorgangId:
+          type: string
+          format: uuid
+        stapelId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          nullable: true
+          example: UPLOADED
+        processingStatus:
+          type: string
+          nullable: true
+          example: RUNNING
+    StapelProgress:
+      required:
+        - pagesDone
+        - pagesFailed
+        - pagesTotal
+        - stapelId
+        - status
+      type: object
+      properties:
+        stapelId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          example: EXTRACTING
+        pagesTotal:
+          type: integer
+          format: int64
+        pagesDone:
+          type: integer
+          format: int64
+        pagesFailed:
+          type: integer
+          format: int64
+    VorgangWorkflowStatusResponse:
+      required:
+        - pagesDone
+        - pagesFailed
+        - pagesTotal
+        - stapel
+        - status
+        - vorgangId
+      type: object
+      properties:
+        vorgangId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          example: PROCESSING_STEP1
+        pagesTotal:
+          type: integer
+          format: int64
+        pagesDone:
+          type: integer
+          format: int64
+        pagesFailed:
+          type: integer
+          format: int64
+        stapel:
+          type: array
+          items:
+            $ref: "#/components/schemas/StapelProgress"
+    VorgangPageResult:
+      required:
+        - doclingJson
+        - markdown
+        - pageId
+        - pageNo
+        - pdfUrl
+        - status
+        - text
+      type: object
+      properties:
+        pageId:
+          type: string
+          format: uuid
+        pdfUrl:
+          type: string
+          example: /pages/046b6c7f-0b8a-43b9-b35d-6489e6daee91/pdf
+        pageNo:
+          type: integer
+        status:
+          type: string
+          example: EXTRACT_DONE
+        errorMessage:
+          type: string
+          nullable: true
+        text:
+          type: string
+        markdown:
+          type: string
+        doclingJson:
+          type: object
+          additionalProperties: true
+    VorgangStapelResult:
+      required:
+        - pages
+        - stapelId
+        - stapelName
+        - status
+      type: object
+      properties:
+        stapelId:
+          type: string
+          format: uuid
+        stapelName:
+          type: string
+        status:
+          type: string
+        pages:
+          type: array
+          items:
+            $ref: "#/components/schemas/VorgangPageResult"
+    VorgangResultsResponse:
+      required:
+        - stapel
+        - status
+        - vorgangId
+      type: object
+      properties:
+        vorgangId:
+          type: string
+          format: uuid
+        status:
+          type: string
+        stapel:
+          type: array
+          items:
+            $ref: "#/components/schemas/VorgangStapelResult"
+    PageInfo:
+      required:
+        - pageId
+        - pageNo
+        - pdfUrl
+        - status
+      type: object
+      properties:
+        pageId:
+          type: string
+          format: uuid
+        pdfUrl:
+          type: string
+          example: /pages/046b6c7f-0b8a-43b9-b35d-6489e6daee91/pdf
+        pageNo:
+          type: integer
+        status:
+          type: string
+          example: EXTRACT_DONE
+        errorMessage:
+          type: string
+          nullable: true
+    PageExtractResponse:
+      required:
+        - doclingJson
+        - markdown
+        - pageId
+        - text
+      type: object
+      properties:
+        pageId:
+          type: string
+          format: uuid
+        text:
+          type: string
+        markdown:
+          type: string
+        doclingJson:
+          type: object
+          additionalProperties: true
+    ApiError:
+      required:
+        - code
+        - message
+      type: object
+      properties:
+        code:
+          type: string
+          description: Fehlercode
+          example: BAD_REQUEST
+          enum:
+            - BAD_REQUEST
+            - NOT_FOUND
+            - SERVER_ERROR
+        message:
+          type: string
+          description: Menschlich lesbare Beschreibung.
+          example: Anfrageparameter fehlen oder sind ungueltig.
+    vorgaenge_body:
+      required:
+        - file
+        - vsnr
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+        stapelName:
+          type: string
+        vsnr:
+          type: string
+  responses:
+    BadRequest:
+      description: Anfrage ist fehlerhaft.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    NotFound:
+      description: Ressource wurde nicht gefunden.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+  parameters:
+    VorgangId:
+      name: vorgangId
+      in: path
+      description: Die ID des Vorgangs.
+      required: true
+      schema:
+        type: string
+        format: uuid
+    StapelId:
+      name: stapelId
+      in: path
+      description: Die ID des Dokumentenstapels.
+      required: true
+      schema:
+        type: string
+        format: uuid
+    PageId:
+      name: pageId
+      in: path
+      description: Die ID der Seite.
+      required: true
+      schema:
+        type: string
+        format: uuid

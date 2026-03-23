@@ -1,5 +1,5 @@
 /**
- * OpenAPI definition
+ * TheLionKing
  *
  * 
  *
@@ -7,7 +7,6 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { JsonNullableString } from './jsonNullableString';
 
 
 export interface PageInfo { 
@@ -15,6 +14,6 @@ export interface PageInfo {
     pdfUrl: string;
     pageNo: number;
     status: string;
-    errorMessage?: JsonNullableString;
+    errorMessage?: string | null;
 }
 

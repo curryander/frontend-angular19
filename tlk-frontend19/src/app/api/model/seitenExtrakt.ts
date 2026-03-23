@@ -9,10 +9,12 @@
  */
 
 
-export interface PageExtractResponse { 
-    pageId: string;
-    text: string;
-    markdown: string;
-    doclingJson: { [key: string]: any; };
+export interface SeitenExtrakt { 
+    id?: string;
+    seiteId?: string;
+    markdown?: string | null;
+    doclingJson?: string | null;
+    ocrEngine?: string | null;
+    extractedAt?: string | null;
 }
 

@@ -30,45 +30,63 @@
   <section class="staples-section">
     <h2>Galerie</h2>
     @defer (on idle) {
-      <div class="staple-gallery-grid">
-        @for (doc of visibleStapleDocuments; track doc.url) {
-          <article class="staple-gallery-card">
-            @if (isPreviewActive(doc.url)) {
-              <div class="staple-preview">
-                <iframe
-                  [src]="doc.previewUrl"
-                  title="PDF Vorschau"
-                  loading="lazy"
-                ></iframe>
-              </div>
-            } @else {
-              <div class="staple-preview-placeholder">
-                <p>Vorschau wird bei Bedarf geladen.</p>
-                <drv-button label="Vorschau laden" kind="secondary" (buttonClick)="showPreview(doc.url)"></drv-button>
-              </div>
-            }
-            <p class="staple-gallery-category">{{ doc.category }}</p>
-            <h3>{{ doc.title }}</h3>
-            <p class="staple-gallery-meta">Hinzugefügt am: {{ doc.addedAt }}</p>
-            <p class="staple-gallery-meta">
-              Seiten:
-              @if (doc.pageCountLoading) {
-                wird ermittelt...
-              } @else if (doc.pageCount !== null && doc.pageCount >= 0) {
-                {{ doc.pageCount }}
+      @if (documentsLoading) {
+        <p>Dokumentenstapel werden geladen...</p>
+      } @else if (documentsError) {
+        <p>{{ documentsError }}</p>
+      } @else if (visibleStapleDocuments.length === 0) {
+        <p>Es sind noch keine Dokumentenstapel vorhanden.</p>
+      } @else {
+        <div class="staple-gallery-grid">
+          @for (doc of visibleStapleDocuments; track doc.id) {
+            <article class="staple-gallery-card">
+              @if (isPreviewActive(doc.id) && doc.previewUrl) {
+                <div class="staple-preview">
+                  <iframe
+                    [src]="doc.previewUrl"
+                    title="PDF Vorschau"
+                    loading="lazy"
+                  ></iframe>
+                </div>
               } @else {
-                nicht verfügbar
+                <div class="staple-preview-placeholder">
+                  @if (doc.previewLoading) {
+                    <p>Vorschau wird geladen...</p>
+                  } @else if (doc.previewError) {
+                    <p>{{ doc.previewError }}</p>
+                  } @else {
+                    <p>Vorschau wird bei Bedarf geladen.</p>
+                  }
+                  <drv-button label="Vorschau laden" kind="secondary" (buttonClick)="showPreview(doc)"></drv-button>
+                </div>
               }
-            </p>
-            <a [href]="doc.url" target="_blank" rel="noopener noreferrer">PDF öffnen</a>
-          </article>
-        }
-      </div>
-
-      @if (hasMoreDocuments()) {
-        <div class="staple-gallery-actions">
-          <drv-button label="Mehr laden" kind="secondary" (buttonClick)="loadMoreDocuments()"></drv-button>
+              <p class="staple-gallery-category">{{ doc.category }}</p>
+              <h3>{{ doc.title }}</h3>
+              <p class="staple-gallery-meta">Hinzugefügt am: {{ doc.addedAt }}</p>
+              <p class="staple-gallery-meta">Dokumentenstapel-ID: {{ doc.id }}</p>
+              <p class="staple-gallery-meta">
+                Seiten:
+                @if (doc.pageCount !== null && doc.pageCount >= 0) {
+                  {{ doc.pageCount }}
+                } @else {
+                  nicht verfügbar
+                }
+              </p>
+              <p class="staple-gallery-meta">Vorgang: {{ doc.vorgangId || 'nicht verfügbar' }}</p>
+              @if (doc.downloadUrl) {
+                <a [href]="doc.downloadUrl" target="_blank" rel="noopener noreferrer">PDF öffnen</a>
+              } @else {
+                <span>PDF noch nicht geladen</span>
+              }
+            </article>
+          }
         </div>
+
+        @if (hasMoreDocuments()) {
+          <div class="staple-gallery-actions">
+            <drv-button label="Mehr laden" kind="secondary" (buttonClick)="loadMoreDocuments()"></drv-button>
+          </div>
+        }
       }
     } @placeholder {
       <p>Galerie wird geladen...</p>

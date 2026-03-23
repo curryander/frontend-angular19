@@ -1,5 +1,5 @@
 /**
- * OpenAPI definition
+ * TheLionKing
  *
  * 
  *
@@ -7,13 +7,12 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { JsonNullableString } from './jsonNullableString';
 
 
 export interface CreateVorgangResponse { 
     vorgangId: string;
     stapelId: string;
-    status?: JsonNullableString;
-    processingStatus?: JsonNullableString;
+    status?: string | null;
+    processingStatus?: string | null;
 }
 

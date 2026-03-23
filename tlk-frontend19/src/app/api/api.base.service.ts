@@ -1,5 +1,5 @@
 /**
- * OpenAPI definition
+ * TheLionKing
  *
  * 
  *
@@ -13,7 +13,7 @@ import { Configuration } from './configuration';
 import { OpenApiHttpParams, QueryParamStyle, concatHttpParamsObject} from './query.params';
 
 export class BaseService {
-    protected basePath = 'https://the-lion-king.mnga3x4jwz5xc.eu-central-1.cs.amazonlightsail.com';
+    protected basePath = 'https://virtserver.swaggerhub.com/thelionking/TheLionKing/1.0.0';
     public defaultHeaders = new HttpHeaders();
     public configuration: Configuration;
     public encoder: HttpParameterCodec;

@@ -1,5 +1,5 @@
 /**
- * OpenAPI definition
+ * TheLionKing
  *
  * 
  *
@@ -7,7 +7,6 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { JsonNullableString } from './jsonNullableString';
 
 
 export interface VorgangPageResult { 
@@ -15,9 +14,9 @@ export interface VorgangPageResult {
     pdfUrl: string;
     pageNo: number;
     status: string;
-    errorMessage?: JsonNullableString;
+    errorMessage?: string | null;
     text: string;
     markdown: string;
-    doclingJson: { [key: string]: object; };
+    doclingJson: { [key: string]: any; };
 }
 

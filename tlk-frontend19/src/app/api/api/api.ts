@@ -1,5 +1,7 @@
-export * from './api.service';
-import { ApiService } from './api.service';
-export * from './databaseHealthController.service';
-import { DatabaseHealthControllerService } from './databaseHealthController.service';
-export const APIS = [ApiService, DatabaseHealthControllerService];
+export * from './dokumentenstapel.service';
+import { DokumentenstapelService } from './dokumentenstapel.service';
+export * from './pages.service';
+import { PagesService } from './pages.service';
+export * from './vorgaenge.service';
+import { VorgaengeService } from './vorgaenge.service';
+export const APIS = [DokumentenstapelService, PagesService, VorgaengeService];
