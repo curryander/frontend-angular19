@@ -36,9 +36,9 @@
 
         <section class="fd-sidebar-panel" aria-label="Seitennavigation Ergebnisliste">
           <h2>Seiten</h2>
-          @if (pages.length > 0) {
+          @if (sidebarPages.length > 0) {
             <ul class="fd-document-list">
-              @for (page of pages; track page.pageId; let i = $index) {
+              @for (page of sidebarPages; track page.pageNo; let i = $index) {
                 <li>
                   <button
                     type="button"
@@ -48,7 +48,10 @@
                   >
                     <span class="fd-document-title">Seite {{ page.pageNo }}</span>
                     <span class="fd-document-meta">Status: {{ page.status }}</span>
-                    <span class="fd-document-meta">ID: {{ page.pageId }}</span>
+                    <span class="fd-document-meta">Nutzbar: {{ page.usable ? 'Ja' : 'Nein' }}</span>
+                    @if (page.errorMessage) {
+                      <span class="fd-document-meta">Fehler: {{ page.errorMessage }}</span>
+                    }
                   </button>
                 </li>
               }
@@ -62,9 +65,9 @@
 
     <main drv-col [sm]="4" [md]="12" [lg]="10" class="fd-content" id="main-content">
       <section class="fd-section">
-        <h1>Prüfungsergebnisse</h1>
+        <h1>Dokumentenverarbeitung</h1>
         <p>
-          Hier werden die Ergebnisse aus dem Workflow angezeigt..
+          Hier werden die Ergebnisse aus dem Verarbeitungsprozess angezeigt..
         </p>
         <drv-status bgColor="ui-05">{{ progressText }}</drv-status>
         <div class="fd-vorgang-data">
@@ -87,8 +90,8 @@
         >
           <article class="fd-pane">
             <h2>Ausgewählte Seite</h2>
-            @if (selectedPage; as page) {
-              @if (isPreviewLoading) {
+            @if (selectedSidebarPage; as sidebarPage) {
+              @if (isPreviewLoading && sidebarPage.pageId) {
                 <p>PDF-Vorschau wird geladen...</p>
               }
               @if (previewError) {
@@ -97,17 +100,20 @@
               @if (selectedPagePreviewUrl; as previewUrl) {
                 <div class="fd-preview-frame">
                   <iframe
-                    title="PDF Vorschau der ausgewaehlten Seite"
+                    title="PDF Vorschau der ausgewählten Seite"
                     [src]="previewUrl"
                   ></iframe>
                 </div>
               }
               <div class="fd-document-preview">
-                <p><strong>Seite:</strong> {{ page.pageNo }}</p>
-                <p><strong>Status:</strong> {{ page.status }}</p>
-                <p><strong>Page-ID:</strong> {{ page.pageId }}</p>
-                @if (page.errorMessage) {
-                  <p class="fd-error"><strong>Fehler:</strong> {{ page.errorMessage }}</p>
+                <p><strong>Seite:</strong> {{ sidebarPage.pageNo }}</p>
+                <p><strong>Status:</strong> {{ sidebarPage.status }}</p>
+                <p><strong>Nutzbar:</strong> {{ sidebarPage.usable ? 'Ja' : 'Nein' }}</p>
+                @if (sidebarPage.pageId) {
+                  <p><strong>Seiten-ID:</strong> {{ sidebarPage.pageId }}</p>
+                }
+                @if (sidebarPage.errorMessage) {
+                  <p class="fd-error"><strong>Fehler:</strong> {{ sidebarPage.errorMessage }}</p>
                 }
               </div>
             } @else {

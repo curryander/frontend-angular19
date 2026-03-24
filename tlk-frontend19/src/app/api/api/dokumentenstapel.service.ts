@@ -21,7 +21,9 @@ import { ApiError } from '../model/apiError';
 // @ts-ignore
 import { Dokumentenstapel } from '../model/dokumentenstapel';
 // @ts-ignore
-import { Page } from '../model/page';
+import { DokumentenstapelNoContent } from '../model/dokumentenstapelNoContent';
+// @ts-ignore
+import { PageNoContent } from '../model/pageNoContent';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -46,9 +48,9 @@ export class DokumentenstapelService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getDokumentenstapel(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<Dokumentenstapel>>;
-    public getDokumentenstapel(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<Dokumentenstapel>>>;
-    public getDokumentenstapel(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<Dokumentenstapel>>>;
+    public getDokumentenstapel(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<DokumentenstapelNoContent>>;
+    public getDokumentenstapel(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<DokumentenstapelNoContent>>>;
+    public getDokumentenstapel(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<DokumentenstapelNoContent>>>;
     public getDokumentenstapel(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
@@ -78,7 +80,7 @@ export class DokumentenstapelService extends BaseService {
 
         let localVarPath = `/dokumentenstapel`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<Array<Dokumentenstapel>>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<Array<DokumentenstapelNoContent>>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -99,9 +101,9 @@ export class DokumentenstapelService extends BaseService {
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public getDokumentenstapelPages(stapelId: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<Page>>;
-    public getDokumentenstapelPages(stapelId: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<Page>>>;
-    public getDokumentenstapelPages(stapelId: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<Page>>>;
+    public getDokumentenstapelPages(stapelId: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<PageNoContent>>;
+    public getDokumentenstapelPages(stapelId: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<PageNoContent>>>;
+    public getDokumentenstapelPages(stapelId: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<PageNoContent>>>;
     public getDokumentenstapelPages(stapelId: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (stapelId === null || stapelId === undefined) {
             throw new Error('Required parameter stapelId was null or undefined when calling getDokumentenstapelPages.');
@@ -134,7 +136,7 @@ export class DokumentenstapelService extends BaseService {
 
         let localVarPath = `/dokumentenstapel/${this.configuration.encodeParam({name: "stapelId", value: stapelId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: "uuid"})}/pages`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<Array<Page>>('get', `${basePath}${localVarPath}`,
+        return this.httpClient.request<Array<PageNoContent>>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,

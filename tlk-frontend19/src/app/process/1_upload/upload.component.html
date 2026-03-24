@@ -136,21 +136,38 @@
         </drv-buttonbar>
       </section>
       <section class="fd-section">
-        <h2>Vorhandenen Vorgang oeffnen</h2>
-        <p>Mit einer vorhandenen Vorgangs-ID koennen Sie direkt zur Pruefung wechseln.</p>
+        <h2>Vorhandenen Dokumentenstapel öffnen</h2>
+        <p>Mit einer vorhandenen Dokumentenstapel-ID können Sie direkt zur Prüfung wechseln.</p>
 
         <drv-textinput
-          label="Vorgangs-ID"
+          label="Dokumentenstapel-ID"
           placeholder="z. B. 5e7d7e84-9b30-4be3-8b42-7f44c53b5c54"
-          [ngModel]="existingVorgangId"
-          (ngModelChange)="onExistingVorgangIdChange($event)"
+          [ngModel]="existingDokumentenstapelId"
+          (ngModelChange)="onExistingDokumentenstapelIdChange($event)"
         ></drv-textinput>
 
+        @if (isLoadingDokumentenstapelHints) {
+          <p>Dokumentenstapel werden geladen...</p>
+        } @else if (dokumentenstapelHints.length > 0) {
+          <div class="fd-vsnr-examples" aria-label="Vorhandene Dokumentenstapel">
+            <p>Vorhandene Dokumentenstapel:</p>
+            <ul>
+              @for (stapel of dokumentenstapelHints; track stapel.id) {
+                <li><code>{{ stapel.id }}</code> - {{ stapel.name }}</li>
+              }
+            </ul>
+          </div>
+        }
+
+        @if (dokumentenstapelHintError) {
+          <p class="fd-error" role="alert">{{ dokumentenstapelHintError }}</p>
+        }
+
         <drv-button
-          [label]="isOpeningExistingProcess ? 'Vorgang wird geladen ...' : 'Zur Pruefung mit Vorgangs-ID'"
+          [label]="isOpeningExistingProcess ? 'Dokumentenstapel wird geladen ...' : 'Zur Prüfung mit Dokumentenstapel-ID'"
           kind="secondary"
           [disabled]="isOpeningExistingProcess"
-          (buttonClick)="openExistingProcess()"
+          (buttonClick)="openExistingDokumentenstapel()"
         ></drv-button>
 
         @if (openExistingError) {

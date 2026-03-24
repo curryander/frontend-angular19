@@ -12,7 +12,12 @@ import {
   RowDirective,
   StatusComponent,
 } from '@drv-ds/drv-design-system-ng';
-import { StapleFlowService, WorkflowPageDisplay, WorkflowVorgangDisplay } from '../staple-flow.service';
+import {
+  StapleFlowService,
+  WorkflowPageDisplay,
+  WorkflowSidebarPageDisplay,
+  WorkflowVorgangDisplay,
+} from '../staple-flow.service';
 
 @Component({
   selector: 'app-process',
@@ -42,6 +47,7 @@ export class ProcessComponent implements OnInit, OnDestroy {
   private readonly maxSplitPercent = 75;
   @ViewChild('compareGrid') compareGridRef?: ElementRef<HTMLElement>;
 
+  sidebarPages: WorkflowSidebarPageDisplay[] = [];
   pages: WorkflowPageDisplay[] = [];
   selectedPageIndex = 0;
   selectedPagePreviewUrl: SafeResourceUrl | null = null;
@@ -59,11 +65,19 @@ export class ProcessComponent implements OnInit, OnDestroy {
   }
 
   get hasPages(): boolean {
-    return this.pages.length > 0;
+    return this.sidebarPages.length > 0;
   }
 
   get selectedPage(): WorkflowPageDisplay | null {
-    return this.pages[this.selectedPageIndex] ?? null;
+    const selectedSidebarPage = this.sidebarPages[this.selectedPageIndex];
+    if (!selectedSidebarPage) {
+      return null;
+    }
+    return this.pages.find((page) => page.pageNo === selectedSidebarPage.pageNo) ?? null;
+  }
+
+  get selectedSidebarPage(): WorkflowSidebarPageDisplay | null {
+    return this.sidebarPages[this.selectedPageIndex] ?? null;
   }
 
   get compareGridTemplateColumns(): string {
@@ -213,22 +227,33 @@ export class ProcessComponent implements OnInit, OnDestroy {
     this.isRefreshing = true;
     this.apiError = '';
     try {
+      this.sidebarPages = await this.flowService.getSidebarPages();
+      if (this.selectedPageIndex >= this.sidebarPages.length) {
+        this.selectedPageIndex = Math.max(this.sidebarPages.length - 1, 0);
+      }
+    } catch {
+      this.sidebarPages = [];
+      this.apiError = 'Seiten konnten nicht vom Server geladen werden.';
+    }
+
+    try {
       await this.flowService.refreshResults();
       this.pages = this.flowService.getPageResults();
-      if (this.selectedPageIndex >= this.pages.length) {
-        this.selectedPageIndex = Math.max(this.pages.length - 1, 0);
-      }
       await this.refreshSelectedPagePreview();
     } catch {
-      this.apiError = 'Ergebnisse konnten nicht vom Server geladen werden.';
+      this.pages = [];
+      await this.refreshSelectedPagePreview();
+      if (!this.apiError) {
+        this.apiError = 'Ergebnisse konnten nicht vom Server geladen werden.';
+      }
     } finally {
       this.isRefreshing = false;
     }
   }
 
   private async refreshSelectedPagePreview(): Promise<void> {
-    const page = this.selectedPage;
-    if (!page) {
+    const pageId = this.selectedSidebarPage?.pageId;
+    if (!pageId) {
       this.selectedPagePreviewUrl = null;
       this.previewError = '';
       this.isPreviewLoading = false;
@@ -240,7 +265,7 @@ export class ProcessComponent implements OnInit, OnDestroy {
     this.previewError = '';
 
     try {
-      const objectUrl = await this.flowService.getPagePdfObjectUrl(page.pageId);
+      const objectUrl = await this.flowService.getPagePdfObjectUrl(pageId);
       if (requestId !== this.previewRequestCounter) {
         return;
       }

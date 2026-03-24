@@ -8,7 +8,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "api:pull": "node ./openapi/pull-openapi.mjs",
-    "api:gen": "openapi-generator-cli generate -i openapi/openapi.yaml -g typescript-angular -o src/app/api --additional-properties=ngVersion=19,providedInRoot=true",
+    "api:clean": "node -e \"require('fs').rmSync('src/app/api', { recursive: true, force: true })\"",
+    "api:gen": "npm run api:clean && openapi-generator-cli generate -i openapi/openapi.yaml -g typescript-angular -o src/app/api --additional-properties=ngVersion=19,providedInRoot=true",
     "api:sync": "npm run api:pull && npm run api:gen"
   },
   "private": true,

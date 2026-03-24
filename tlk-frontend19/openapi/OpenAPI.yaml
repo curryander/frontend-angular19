@@ -99,7 +99,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Dokumentenstapel"
+                  $ref: "#/components/schemas/DokumentenstapelNoContent"
         "404":
           $ref: "#/components/responses/NotFound"
   /dokumentenstapel/{stapelId}/pages:
@@ -118,7 +118,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Page"
+                  $ref: "#/components/schemas/PageNoContent"
         "404":
           $ref: "#/components/responses/NotFound"
   /dokumentenstapel/{stapelId}/upload:
@@ -221,6 +221,30 @@ components:
         createdAt:
           type: string
           format: date-time
+    DokumentenstapelNoContent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        vorgangId:
+          type: string
+          format: uuid
+        stapelName:
+          type: string
+        uploadFilename:
+          type: string
+        originalFilename:
+          type: string
+        pdfStorageRef:
+          type: string
+        seitenAnzahl:
+          type: integer
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
     Page:
       type: object
       properties:
@@ -242,6 +266,35 @@ components:
           type: string
           nullable: true
         extractedText:
+          type: string
+          nullable: true
+        dokumentenstapelId:
+          type: string
+          format: uuid
+        seitenExtraktId:
+          type: string
+          format: uuid
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        usable:
+          type: boolean
+    PageNoContent:
+      type: object
+      properties:
+        seiteId:
+          type: string
+          format: uuid
+        pageNo:
+          type: integer
+        pdfPagePath:
+          type: string
+        sha256:
+          type: string
+        status:
+          type: string
+        errorMessage:
           type: string
           nullable: true
         dokumentenstapelId:

@@ -1,6 +1,8 @@
 ﻿import { Component, inject } from '@angular/core';
+import { OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import {
   ApplicationHeaderComponent,
   ButtonComponent,
@@ -16,6 +18,7 @@ import {
   TextinputComponent,
   UploadFieldComponent,
 } from '@drv-ds/drv-design-system-ng';
+import { DokumentenstapelService } from '../../api/api/dokumentenstapel.service';
 import { StapleFlowService } from '../staple-flow.service';
 
 @Component({
@@ -40,22 +43,30 @@ import { StapleFlowService } from '../staple-flow.service';
   standalone: true,
   styleUrl: './upload.component.scss',
 })
-export class UploadComponent {
+export class UploadComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly flowService = inject(StapleFlowService);
+  private readonly dokumentenstapelService = inject(DokumentenstapelService);
   private readonly maxTotalFileSizeBytes = 1024 * 1024 * 1024;
   private readonly maxDocumentCount = 1;
 
   selectedFiles: FileList | null = null;
   insuranceNumber = '12 150890 M 123';
-  existingVorgangId = '';
+  existingDokumentenstapelId = '';
   isConfirmationChecked = false;
   uploadError = '';
   startError = '';
   openExistingError = '';
+  dokumentenstapelHintError = '';
   isStartingProcessing = false;
   isOpeningExistingProcess = false;
+  isLoadingDokumentenstapelHints = false;
   hasInteractedWithRequiredFields = false;
+  dokumentenstapelHints: Array<{ id: string; name: string }> = [];
+
+  async ngOnInit(): Promise<void> {
+    await this.loadDokumentenstapelHints();
+  }
 
   cancelFlow(): void {
     this.flowService.resetFlow();
@@ -85,24 +96,24 @@ export class UploadComponent {
     }
   }
 
-  async openExistingProcess(): Promise<void> {
+  async openExistingDokumentenstapel(): Promise<void> {
     this.openExistingError = '';
     if (this.isOpeningExistingProcess) {
       return;
     }
 
-    const vorgangId = this.existingVorgangId.trim();
-    if (!vorgangId) {
-      this.openExistingError = 'Bitte geben Sie eine Vorgangs-ID ein.';
+    const stapelId = this.existingDokumentenstapelId.trim();
+    if (!stapelId) {
+      this.openExistingError = 'Bitte geben Sie eine Dokumentenstapel-ID ein.';
       return;
     }
 
     this.isOpeningExistingProcess = true;
     try {
-      await this.flowService.openExistingProcess(vorgangId);
+      await this.flowService.openExistingDokumentenstapel(stapelId);
       void this.router.navigate(['/process']);
     } catch {
-      this.openExistingError = 'Vorgang konnte nicht geladen werden. Bitte ID pruefen und erneut versuchen.';
+      this.openExistingError = 'Dokumentenstapel konnte nicht geladen werden. Bitte ID prüfen und erneut versuchen.';
     } finally {
       this.isOpeningExistingProcess = false;
     }
@@ -124,8 +135,8 @@ export class UploadComponent {
     this.insuranceNumber = value;
   }
 
-  onExistingVorgangIdChange(value: string): void {
-    this.existingVorgangId = value;
+  onExistingDokumentenstapelIdChange(value: string): void {
+    this.existingDokumentenstapelId = value;
   }
 
   removeSelectedFile(fileIndex: number): void {
@@ -178,6 +189,26 @@ export class UploadComponent {
   get selectedFileSizeTotalMb(): string {
     const totalBytes = this.selectedFileList.reduce((sum, file) => sum + file.size, 0);
     return (totalBytes / (1024 * 1024)).toFixed(2);
+  }
+
+  private async loadDokumentenstapelHints(): Promise<void> {
+    this.isLoadingDokumentenstapelHints = true;
+    this.dokumentenstapelHintError = '';
+
+    try {
+      const stapel = await firstValueFrom(this.dokumentenstapelService.getDokumentenstapel());
+      this.dokumentenstapelHints = stapel
+        .filter((entry) => Boolean(entry.id))
+        .map((entry) => ({
+          id: entry.id ?? '',
+          name: entry.stapelName?.trim() || entry.originalFilename?.trim() || entry.uploadFilename?.trim() || 'Ohne Bezeichnung',
+        }));
+    } catch {
+      this.dokumentenstapelHintError = 'Die Liste der Dokumentenstapel konnte nicht geladen werden.';
+      this.dokumentenstapelHints = [];
+    } finally {
+      this.isLoadingDokumentenstapelHints = false;
+    }
   }
 
   private validateSelection(): void {
