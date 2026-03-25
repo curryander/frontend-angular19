@@ -47,12 +47,14 @@ export class ProcessComponent implements OnInit, OnDestroy {
   private readonly maxSplitPercent = 75;
   @ViewChild('compareGrid') compareGridRef?: ElementRef<HTMLElement>;
 
+  readonly extractionViews = ['text', 'markdown', 'json'] as const;
   sidebarPages: WorkflowSidebarPageDisplay[] = [];
   pages: WorkflowPageDisplay[] = [];
   selectedPageIndex = 0;
   selectedPagePreviewUrl: SafeResourceUrl | null = null;
   isPreviewLoading = false;
   previewError = '';
+  selectedExtractionView: (typeof this.extractionViews)[number] = 'markdown';
   splitPercent = 42;
   isRefreshing = false;
   isLlmStarting = false;
@@ -107,6 +109,23 @@ export class ProcessComponent implements OnInit, OnDestroy {
     return this.flowService.canTriggerLlmProcessing() && !this.isLlmStarting;
   }
 
+  get selectedExtractionContent(): string {
+    const page = this.selectedPage;
+    if (!page) {
+      return '';
+    }
+
+    switch (this.selectedExtractionView) {
+      case 'text':
+        return page.text;
+      case 'json':
+        return page.doclingJson;
+      case 'markdown':
+      default:
+        return page.markdown;
+    }
+  }
+
   async ngOnInit(): Promise<void> {
     await this.refreshProcessState();
     this.startPolling();
@@ -148,6 +167,22 @@ export class ProcessComponent implements OnInit, OnDestroy {
       return;
     }
     void this.router.navigate(['/summary']);
+  }
+
+  setExtractionView(view: (typeof this.extractionViews)[number]): void {
+    this.selectedExtractionView = view;
+  }
+
+  getExtractionViewLabel(view: (typeof this.extractionViews)[number]): string {
+    switch (view) {
+      case 'text':
+        return 'Text';
+      case 'json':
+        return 'JSON';
+      case 'markdown':
+      default:
+        return 'Markdown';
+    }
   }
 
   async startLlmProcessing(): Promise<void> {

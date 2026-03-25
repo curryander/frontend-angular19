@@ -133,12 +133,25 @@
           <article class="fd-pane">
             <h2>Extrahierte Inhalte</h2>
             @if (selectedPage; as page) {
-              @if (page.hasExtract) {
+              <div class="fd-extract-toolbar" role="tablist" aria-label="Ansicht für extrahierte Inhalte">
+                @for (view of extractionViews; track view) {
+                  <button
+                    type="button"
+                    class="fd-extract-tab"
+                    [class.fd-extract-tab--active]="view === selectedExtractionView"
+                    [attr.aria-selected]="view === selectedExtractionView"
+                    (click)="setExtractionView(view)"
+                  >
+                    {{ getExtractionViewLabel(view) }}
+                  </button>
+                }
+              </div>
+              @if (selectedExtractionContent) {
                 <div class="fd-markdown-frame">
-                  <pre class="fd-code-block">{{ page.markdown }}</pre>
+                  <pre class="fd-code-block">{{ selectedExtractionContent }}</pre>
                 </div>
               } @else {
-                <p>Für diese Seite liegt noch kein Extrakt vor.</p>
+                <p>Für diese Seite liegt noch kein {{ getExtractionViewLabel(selectedExtractionView) }} vor.</p>
               }
             } @else {
               <p>Es ist noch keine Seite ausgewählt.</p>

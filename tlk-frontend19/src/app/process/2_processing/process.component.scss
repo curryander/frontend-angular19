@@ -190,6 +190,33 @@
   overflow: auto;
 }
 
+.fd-extract-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.fd-extract-tab {
+  padding: 0.5rem 0.875rem;
+  border: 0.0625rem solid var(--drv-color-ui-04, #b4c1d0);
+  border-radius: 999px;
+  background-color: var(--drv-color-ui-01, #fff);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+
+.fd-extract-tab--active {
+  border-color: var(--drv-color-interactive-01, #083163);
+  background-color: var(--drv-color-ui-06, #f0f2f5);
+}
+
+.fd-extract-tab:focus-visible {
+  outline: 0.125rem solid var(--drv-color-interactive-01, #083163);
+  outline-offset: 0.125rem;
+}
+
 .fd-kv-row {
   display: grid;
   grid-template-columns: minmax(0, 14rem) minmax(0, 1fr);
