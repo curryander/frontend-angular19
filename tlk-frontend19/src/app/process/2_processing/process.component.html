@@ -163,12 +163,12 @@
       <section class="fd-actions">
         <drv-buttonbar placing="space-between" layoutMobile="block" [wrap]="true">
           <drv-button label="Zurück zu Hochladen" kind="secondary" (buttonClick)="backToUpload()"></drv-button>
-          <drv-button
-            [label]="isLlmStarting ? 'LLM-Verarbeitung startet ...' : 'LLM-Verarbeitung starten'"
-            kind="secondary"
-            [disabled]="!canStartLlm"
-            (buttonClick)="startLlmProcessing()"
-          ></drv-button>
+<!--          <drv-button-->
+<!--            [label]="isLlmStarting ? 'LLM-Verarbeitung startet ...' : 'LLM-Verarbeitung starten'"-->
+<!--            kind="secondary"-->
+<!--            [disabled]="!canStartLlm"-->
+<!--            (buttonClick)="startLlmProcessing()"-->
+<!--          ></drv-button>-->
           <drv-button
             label="Weiter zu Zusammenfassung"
             kind="primary"
